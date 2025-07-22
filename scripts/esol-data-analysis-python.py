@@ -315,14 +315,26 @@ def main():
             # Output JSON metrics
             import json
             metrics = analyzer.calculate_okr_metrics()
-            print(json.dumps(metrics, indent=2))
+            json_output = json.dumps(metrics, indent=2)
+            
+            if args.output:
+                # Save JSON to file with UTF-8 encoding
+                output_path = Path(args.output)
+                output_path.parent.mkdir(parents=True, exist_ok=True)
+                with open(output_path, 'w', encoding='utf-8') as f:
+                    f.write(json_output)
+                print(f"📄 JSON metrics saved to {args.output}")
+            else:
+                print(json_output)
         else:
             # Generate and display report
             report = analyzer.generate_report()
             
             if args.output:
-                # Save to file
-                with open(args.output, 'w') as f:
+                # Save to file with UTF-8 encoding to handle emoji characters
+                output_path = Path(args.output)
+                output_path.parent.mkdir(parents=True, exist_ok=True)
+                with open(output_path, 'w', encoding='utf-8') as f:
                     f.write(report)
                 print(f"📄 Report saved to {args.output}")
             else:

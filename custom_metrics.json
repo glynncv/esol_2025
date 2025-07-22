@@ -1,0 +1,15 @@
+{
+  "kr1_current_percentage": 1.2488849241748439,
+  "kr1_devices_remaining": 56,
+  "kr2_current_percentage": 8.206958073148975,
+  "kr2_50_percent_target": 4.1034790365744875,
+  "kr2_devices_for_50_percent": 184,
+  "kr2_total_devices": 368,
+  "kr3_compatibility_percentage": 90.54415700267619,
+  "kr3_adoption_percentage": 63.82694023193577,
+  "kr3_target_met": true,
+  "kr4_enterprise_kiosks": 164,
+  "total_devices": 4484,
+  "total_esol_devices": 424,
+  "total_esol_percentage": 9.455842997323819
+}
