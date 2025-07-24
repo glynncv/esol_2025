@@ -1,15 +1,16 @@
 #!/usr/bin/env python3
 """
-EUC 2026 Refresh Scope Counter
+EUC ESOL Counter
 
-Counts the number of End User Computing (EUC) devices in scope for 2026 refresh
+Counts the number of End User Computing (EUC) devices in scope for ESOL refresh
 using configuration from config/esol_criteria.yaml to determine scope criteria.
+Exports results in both CSV and Excel (.xlsx) formats.
 
 Requirements:
     pip install pandas openpyxl pyyaml
 
 Usage:
-    python euc_2026_count.py [filepath]
+    python euc_esol_count.py [filepath]
     # If no filepath is provided, defaults to data/raw/EUC_ESOL.xlsx
 """
 
@@ -19,6 +20,7 @@ import sys
 import argparse
 from pathlib import Path
 from typing import Tuple, List, Dict, Any
+from datetime import datetime
 
 def load_config(config_path: str = "config/esol_criteria.yaml") -> Dict[str, Any]:
     """Load configuration from YAML file."""
@@ -102,8 +104,17 @@ def count_devices_in_scope(df: pd.DataFrame, config: Dict[str, Any], target_cate
     
     return df_2026, count_2026, total_devices, action_filter
 
-def generate_site_summary(df_2026: pd.DataFrame, config: Dict[str, Any]) -> List[Dict[str, Any]]:
-    """Generate summary by site with device counts and costs."""
+def generate_site_summary(df_2026: pd.DataFrame, config: Dict[str, Any], category: str) -> List[Dict[str, Any]]:
+    """Generate summary by site with device counts and costs.
+    
+    Args:
+        df_2026: DataFrame with devices in scope
+        config: Configuration dictionary with data mappings  
+        category: ESOL category (e.g., 'esol_2024', 'esol_2025', 'esol_2026')
+    
+    Returns:
+        List of dictionaries with site summary data including category
+    """
     export_rows = []
     
     if df_2026.empty:
@@ -128,33 +139,88 @@ def generate_site_summary(df_2026: pd.DataFrame, config: Dict[str, Any]) -> List
         count = len(group)
         cost = group[cost_column].sum()
         print(f"{site:<30} {count:>8} ${cost:>17,.0f}")
-        export_rows.append({'Site': site, '# of Devices': count, 'Replacement Cost': cost})
+        export_rows.append({
+            'Category': category.upper(),
+            'Site': site, 
+            '# of Devices': count, 
+            'Replacement Cost': cost
+        })
     
     return export_rows
 
-def export_summary(export_rows: List[Dict[str, Any]], export_path: Path) -> None:
-    """Export site summary to CSV file."""
+def export_summary(export_rows: List[Dict[str, Any]], base_path: Path) -> None:
+    """Export site summary to both CSV and Excel files."""
     if not export_rows:
         print("No data to export.")
         return
     
     # Ensure output directory exists
-    export_path.parent.mkdir(parents=True, exist_ok=True)
+    base_path.parent.mkdir(parents=True, exist_ok=True)
     
     export_df = pd.DataFrame(export_rows)
     export_df = export_df.sort_values(by='Replacement Cost', ascending=False)
-    export_df.to_csv(export_path, index=False)
-    print(f"\nExported per-site summary to '{export_path}'")
+    
+    # Generate file paths for both formats
+    csv_path = base_path.with_suffix('.csv')
+    xlsx_path = base_path.with_suffix('.xlsx')
+    
+    # Export to CSV
+    try:
+        export_df.to_csv(csv_path, index=False)
+        print(f"\nExported per-site summary to CSV: '{csv_path}'")
+    except PermissionError:
+        print(f"\n❌ Cannot write to '{csv_path}' - file may be open in Excel or another program")
+        print("Please close the file and try again, or use a different output path:")
+        print(f"   python {sys.argv[0]} --output-path 'data/processed/euc_site_summary_{datetime.now().strftime('%Y%m%d_%H%M%S')}'")
+        
+        # Try to save with timestamp as fallback
+        timestamp = datetime.now().strftime('%Y%m%d_%H%M%S')
+        fallback_csv_path = base_path.parent / f"euc_site_summary_{timestamp}.csv"
+        fallback_xlsx_path = base_path.parent / f"euc_site_summary_{timestamp}.xlsx"
+        try:
+            export_df.to_csv(fallback_csv_path, index=False)
+            print(f"✅ Saved CSV to fallback location: '{fallback_csv_path}'")
+            # Also try Excel with fallback name
+            try:
+                export_df.to_excel(fallback_xlsx_path, index=False, engine='openpyxl')
+                print(f"✅ Saved Excel to fallback location: '{fallback_xlsx_path}'")
+            except Exception as e:
+                print(f"❌ Could not save Excel to fallback location: {e}")
+        except Exception as e:
+            print(f"❌ Could not save CSV to fallback location either: {e}")
+        return
+    except Exception as e:
+        print(f"\n❌ Error saving CSV file: {e}")
+        return
+    
+    # Export to Excel
+    try:
+        export_df.to_excel(xlsx_path, index=False, engine='openpyxl')
+        print(f"Exported per-site summary to Excel: '{xlsx_path}'")
+    except PermissionError:
+        print(f"\n❌ Cannot write to '{xlsx_path}' - file may be open in Excel or another program")
+        print("Please close the file and try again.")
+        
+        # Try to save with timestamp as fallback
+        timestamp = datetime.now().strftime('%Y%m%d_%H%M%S')
+        fallback_xlsx_path = base_path.parent / f"euc_site_summary_{timestamp}.xlsx"
+        try:
+            export_df.to_excel(fallback_xlsx_path, index=False, engine='openpyxl')
+            print(f"✅ Saved Excel to fallback location: '{fallback_xlsx_path}'")
+        except Exception as e:
+            print(f"❌ Could not save Excel to fallback location either: {e}")
+    except Exception as e:
+        print(f"\n❌ Error saving Excel file: {e}")
 
 def main():
     parser = argparse.ArgumentParser(
         description='Count EUC devices in scope for ESOL refresh using configuration-driven criteria',
         epilog="""
 Examples:
-  python euc_2026_count.py                           # Analyze 2026 ESOL devices
-  python euc_2026_count.py --category esol_2024     # Analyze 2024 ESOL devices  
-  python euc_2026_count.py --category esol_2025     # Analyze 2025 ESOL devices
-  python euc_2026_count.py --help-categories        # Show available categories
+  python euc_esol_count.py                           # Analyze 2026 ESOL devices
+  python euc_esol_count.py --category esol_2024     # Analyze 2024 ESOL devices  
+  python euc_esol_count.py --category esol_2025     # Analyze 2025 ESOL devices
+  python euc_esol_count.py --help-categories        # Show available categories
         """,
         formatter_class=argparse.RawDescriptionHelpFormatter
     )
@@ -166,8 +232,8 @@ Examples:
                        help='ESOL category to analyze (default: esol_2026)')
     parser.add_argument('--sheet-name', default='Export',
                        help='Excel sheet name to read (default: Export)')
-    parser.add_argument('--output-path', default='data/processed/euc_2026_site_summary.csv',
-                       help='Output CSV path (default: data/processed/euc_2026_site_summary.csv)')
+    parser.add_argument('--output-path', default='data/processed/euc_esol_site_summary',
+                       help='Output file base path without extension (default: data/processed/euc_esol_site_summary)')
     parser.add_argument('--help-categories', action='store_true',
                        help='Show available ESOL categories and exit')
     args = parser.parse_args()
@@ -222,7 +288,7 @@ Examples:
     # Generate and display site summary
     print(f"\nDevices in scope for {args.category} refresh by site:")
     if not df_2026.empty:
-        export_rows = generate_site_summary(df_2026, config)
+        export_rows = generate_site_summary(df_2026, config, args.category)
         
         # Export to CSV
         export_path = Path(args.output_path)

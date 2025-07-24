@@ -3,7 +3,7 @@ REM EUC ESOL Analysis Runner
 REM This batch file makes it easier to run the EUC analysis script
 
 set PYTHON_PATH=C:/Users/cglynn/myPython/esol_2025/.venv/Scripts/python.exe
-set SCRIPT_PATH=scripts\euc_2026_count.py
+set SCRIPT_PATH=scripts\euc_esol_count.py
 
 echo EUC ESOL Analysis Tool
 echo ======================
@@ -28,17 +28,17 @@ if "%1"=="cats" (
 )
 
 if "%1"=="2024" (
-    %PYTHON_PATH% %SCRIPT_PATH% --category esol_2024
+    %PYTHON_PATH% %SCRIPT_PATH% --category esol_2024 --output-path "data/processed/euc_2024_site_summary"
     goto :eof
 )
 
 if "%1"=="2025" (
-    %PYTHON_PATH% %SCRIPT_PATH% --category esol_2025
+    %PYTHON_PATH% %SCRIPT_PATH% --category esol_2025 --output-path "data/processed/euc_2025_site_summary"
     goto :eof
 )
 
 if "%1"=="2026" (
-    %PYTHON_PATH% %SCRIPT_PATH% --category esol_2026
+    %PYTHON_PATH% %SCRIPT_PATH% --category esol_2026 --output-path "data/processed/euc_2026_site_summary"
     goto :eof
 )
 
