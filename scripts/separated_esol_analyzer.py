@@ -6,8 +6,24 @@ Clean separation: Data Analysis → Business Logic → Presentation
 Requirements:
     pip install pandas openpyxl pyyaml
 
-Usage:
-    python esol_analyzer.py [filepath] [--config-path config/]
+Usage Examples:
+    # Quick status check (recommended for daily use)
+    python separated_esol_analyzer.py --format quick
+    
+    # Executive summary (for management reports)
+    python separated_esol_analyzer.py --format executive
+    
+    # Full OKR tracker (comprehensive report)
+    python separated_esol_analyzer.py --format full
+    
+    # Site analysis (top priority sites)
+    python separated_esol_analyzer.py --format site --top-sites 10
+    
+    # JSON output (for APIs or further processing)
+    python separated_esol_analyzer.py --format json
+    
+    # Save to file
+    python separated_esol_analyzer.py --format executive -o reports/weekly_update.md
 """
 
 import pandas as pd
@@ -17,6 +33,12 @@ from pathlib import Path
 from typing import Dict, Any, List, Optional, Union
 from datetime import datetime, date
 import argparse
+
+# Fix UTF-8 encoding for Windows console to handle emoji characters
+if sys.platform == "win32":
+    import codecs
+    sys.stdout = codecs.getwriter("utf-8")(sys.stdout.detach())
+    sys.stderr = codecs.getwriter("utf-8")(sys.stderr.detach())
 
 # Cache loaded YAML configs so they are only read once per ETL run
 _CONFIG_CACHE: Dict[Path, Dict[str, Any]] = {}
@@ -226,7 +248,7 @@ class DataAnalyzer:
         numeric_cols = [self.data_mapping.get('cost_column')]
 
         for col in string_cols:
-            if col in df.columns and not pd.api.types.is_string_dtype(df[col]):
+            if col in df.columns and not pd.api.types.is_object_dtype(df[col]):
                 raise TypeError(f"Column '{col}' must contain string data")
 
         for col in numeric_cols:
