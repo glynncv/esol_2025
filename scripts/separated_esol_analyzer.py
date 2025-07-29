@@ -18,6 +18,9 @@ from typing import Dict, Any, List, Optional, Union
 from datetime import datetime, date
 import argparse
 
+# Cache loaded YAML configs so they are only read once per ETL run
+_CONFIG_CACHE: Dict[Path, Dict[str, Any]] = {}
+
 
 class ConfigManager:
     """Manages configuration loading and validation"""
@@ -31,15 +34,25 @@ class ConfigManager:
     def _load_yaml(self, filename: str) -> Dict[str, Any]:
         """Load YAML configuration file"""
         file_path = self.config_path / filename
+
+        # Return cached copy if we've already loaded this file
+        cached = _CONFIG_CACHE.get(file_path)
+        if cached is not None:
+            return cached
+
         try:
             with open(file_path, 'r') as f:
-                return yaml.safe_load(f)
+                data = yaml.safe_load(f)
+                _CONFIG_CACHE[file_path] = data
+                return data
         except FileNotFoundError:
             print(f"⚠️  Config file not found: {file_path}")
             print(f"Creating default configuration...")
             self._create_default_config(filename)
             with open(file_path, 'r') as f:
-                return yaml.safe_load(f)
+                data = yaml.safe_load(f)
+                _CONFIG_CACHE[file_path] = data
+                return data
         except yaml.YAMLError as e:
             print(f"❌ Error loading {filename}: {e}")
             sys.exit(1)
@@ -202,6 +215,36 @@ class DataAnalyzer:
         missing_columns = [col for col in required_columns if col not in df.columns]
         if missing_columns:
             raise ValueError(f"Missing required columns: {missing_columns}")
+
+        # Validate expected data types
+        string_cols = [
+            self.data_mapping['action_column'],
+            self.data_mapping['os_column'],
+            self.data_mapping['edition_column'],
+            self.data_mapping['site_column'],
+        ]
+        numeric_cols = [self.data_mapping.get('cost_column')]
+
+        for col in string_cols:
+            if col in df.columns and not pd.api.types.is_string_dtype(df[col]):
+                raise TypeError(f"Column '{col}' must contain string data")
+
+        for col in numeric_cols:
+            if col and col in df.columns and not pd.api.types.is_numeric_dtype(df[col]):
+                raise TypeError(f"Column '{col}' must be numeric")
+
+        # Validate allowed values and ranges
+        edition_col = self.data_mapping['edition_column']
+        if edition_col in df.columns:
+            allowed_editions = {"Enterprise", "LTSC"}
+            invalid = df.loc[~df[edition_col].isin(allowed_editions), edition_col].dropna().unique()
+            if len(invalid) > 0:
+                raise ValueError(f"Invalid values in '{edition_col}': {invalid}")
+
+        cost_col = self.data_mapping.get('cost_column')
+        if cost_col and cost_col in df.columns and pd.api.types.is_numeric_dtype(df[cost_col]):
+            if (df[cost_col] < 0).any():
+                raise ValueError(f"Negative values found in '{cost_col}'")
     
     def extract_basic_counts(self, df: pd.DataFrame) -> Dict[str, int]:
         """Extract basic device counts - pure data extraction"""
