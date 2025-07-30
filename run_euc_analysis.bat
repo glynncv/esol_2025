@@ -2,7 +2,7 @@
 REM EUC ESOL Analysis Runner
 REM This batch file makes it easier to run the EUC analysis script
 
-set PYTHON_PATH=C:/Users/cglynn/myPython/esol_2025/.venv/Scripts/python.exe
+set PYTHON_PATH=.\.venv\Scripts\python.exe
 set SCRIPT_PATH=scripts\euc_esol_count.py
 
 echo EUC ESOL Analysis Tool
