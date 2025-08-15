@@ -2,63 +2,56 @@
 setlocal enabledelayedexpansion
 
 :: Simple ESOL Analysis Tool Batch Script
-:: Usage: run_simple_analysis.bat [format] [output_file]
+:: Usage: run_simple_analysis.bat [category]
 
 set PYTHON_EXE=python
-set SCRIPT_PATH=scripts/esol-data-analysis-python.py
-set DATA_FILE=data/raw/EUC_ESOL.xlsx
+set SCRIPT_PATH=scripts/euc_count.py
 
 if "%~1"=="help" (
     echo Simple ESOL Analysis Tool
     echo =========================
     echo Usage:
-    echo   run_simple_analysis.bat [format] [output_file]
+    echo   run_simple_analysis.bat [category]
     echo.
-    echo Available commands:
-    echo   run_simple_analysis.bat           - Full report to console
-    echo   run_simple_analysis.bat report    - Save full report to file
-    echo   run_simple_analysis.bat json      - JSON metrics to console
-    echo   run_simple_analysis.bat jsave     - Save JSON metrics to file
+    echo Available categories:
+    echo   run_simple_analysis.bat           - All categories (default)
+    echo   run_simple_analysis.bat esol_2024 - ESOL 2024 devices only
+    echo   run_simple_analysis.bat esol_2025 - ESOL 2025 devices only
+    echo   run_simple_analysis.bat esol_2026 - Non-ESOL devices only
     echo   run_simple_analysis.bat help      - Show this help
     echo.
     echo Examples:
-    echo   run_simple_analysis.bat report my_report.md
-    echo   run_simple_analysis.bat jsave metrics.json
+    echo   run_simple_analysis.bat esol_2024
+    echo   run_simple_analysis.bat esol_2025
     goto :end
 )
 
-if "%~1"=="report" (
-    if "%~2"=="" (
-        set OUTPUT_FILE=data/reports/esol_report_%DATE:~-4,4%%DATE:~-10,2%%DATE:~-7,2%.md
-    ) else (
-        set OUTPUT_FILE=%~2
-    )
-    echo Generating report and saving to !OUTPUT_FILE!...
-    %PYTHON_EXE% %SCRIPT_PATH% --output "!OUTPUT_FILE!"
-    echo Report saved to !OUTPUT_FILE!
+if "%~1"=="" (
+    echo Generating ESOL Analysis Report (all categories)...
+    %PYTHON_EXE% %SCRIPT_PATH%
     goto :end
 )
 
-if "%~1"=="json" (
-    echo Generating JSON metrics...
-    %PYTHON_EXE% %SCRIPT_PATH% --json
+if "%~1"=="esol_2024" (
+    echo Generating ESOL 2024 Analysis...
+    %PYTHON_EXE% %SCRIPT_PATH% --category esol_2024
     goto :end
 )
 
-if "%~1"=="jsave" (
-    if "%~2"=="" (
-        set OUTPUT_FILE=data/reports/esol_metrics_%DATE:~-4,4%%DATE:~-10,2%%DATE:~-7,2%.json
-    ) else (
-        set OUTPUT_FILE=%~2
-    )
-    echo Generating JSON metrics and saving to !OUTPUT_FILE!...
-    %PYTHON_EXE% %SCRIPT_PATH% --json --output "!OUTPUT_FILE!"
-    echo Metrics saved to !OUTPUT_FILE!
+if "%~1"=="esol_2025" (
+    echo Generating ESOL 2025 Analysis...
+    %PYTHON_EXE% %SCRIPT_PATH% --category esol_2025
     goto :end
 )
 
-:: Default - full report to console
-echo Generating ESOL Analysis Report...
-%PYTHON_EXE% %SCRIPT_PATH%
+if "%~1"=="esol_2026" (
+    echo Generating Non-ESOL Analysis...
+    %PYTHON_EXE% %SCRIPT_PATH% --category esol_2026
+    goto :end
+)
+
+echo Invalid category. Use 'help' for available options.
 
 :end
+echo.
+pause

@@ -104,10 +104,10 @@ class ConfigManager:
                 },
                 'data_mapping': {
                     'action_column': 'Action to take',
-                    'os_column': 'Current OS Build',
-                    'edition_column': 'LTSC or Enterprise',
-                    'cost_column': 'Cost for Replacement $',
-                    'site_column': 'Site Location AD',
+                    'os_column': 'OS Build',
+                    'edition_column': 'Enterprise or LTSC',
+                    'cost_column': 'Estimate Cost for Replacement $',
+                    'site_column': 'Site Location',
                     'user_columns': {
                         'current': 'Current User Logged On',
                         'last': 'Last User Logged On'

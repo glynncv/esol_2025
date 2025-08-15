@@ -5,7 +5,7 @@ REM Interactive dashboard for OKR analysis
 echo Starting OKR Dashboard...
 echo ========================
 
-.\.venv\Scripts\python.exe scripts\okr_dashboard.py
+python scripts\okr_dashboard.py
 
 echo.
 echo Dashboard closed.

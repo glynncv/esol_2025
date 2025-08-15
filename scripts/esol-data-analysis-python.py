@@ -69,11 +69,11 @@ class ESOLAnalyzer:
             raise ValueError("Data not loaded")
         
         # Count Windows 11 devices
-        win11_devices = self.data[self.data['Current OS Build'].str.contains('Win11', na=False)].shape[0]
+        win11_devices = self.data[self.data['OS Build'].str.contains('Win11', na=False)].shape[0]
         
         # Count Enterprise vs LTSC
-        enterprise_count = self.data[self.data['LTSC or Enterprise'] == 'Enterprise'].shape[0]
-        ltsc_count = self.data[self.data['LTSC or Enterprise'] == 'LTSC'].shape[0]
+        enterprise_count = self.data[self.data['Enterprise or LTSC'] == 'Enterprise'].shape[0]
+        ltsc_count = self.data[self.data['Enterprise or LTSC'] == 'LTSC'].shape[0]
         
         # Calculate ESOL counts for compatibility
         esol_data = self.analyze_esol_categories()
@@ -109,8 +109,8 @@ class ESOLAnalyzer:
         kiosk_devices = self.data[kiosk_mask]
         
         # Count Enterprise kiosks that need re-provisioning
-        enterprise_kiosks = kiosk_devices[kiosk_devices['LTSC or Enterprise'] == 'Enterprise'].shape[0]
-        ltsc_kiosks = kiosk_devices[kiosk_devices['LTSC or Enterprise'] == 'LTSC'].shape[0]
+        enterprise_kiosks = kiosk_devices[kiosk_devices['Enterprise or LTSC'] == 'Enterprise'].shape[0]
+        ltsc_kiosks = kiosk_devices[kiosk_devices['Enterprise or LTSC'] == 'LTSC'].shape[0]
         
         results = {
             'total_kiosk_devices': len(kiosk_devices),
@@ -133,8 +133,8 @@ class ESOLAnalyzer:
         esol_2024_mask = self.data['Action to take'] == 'Urgent Replacement'
         esol_2025_mask = self.data['Action to take'] == 'Replace by 14/10/2025'
         # Explicitly convert to Series for linter clarity
-        esol_2024_by_site = pd.Series(self.data[esol_2024_mask]['Site Location AD']).value_counts().to_dict()
-        esol_2025_by_site = pd.Series(self.data[esol_2025_mask]['Site Location AD']).value_counts().to_dict()
+        esol_2024_by_site = pd.Series(self.data[esol_2024_mask]['Site Location']).value_counts().to_dict()
+        esol_2025_by_site = pd.Series(self.data[esol_2025_mask]['Site Location']).value_counts().to_dict()
         
         # Combine site data
         all_sites = set(list(esol_2024_by_site.keys()) + list(esol_2025_by_site.keys()))
@@ -169,8 +169,8 @@ class ESOLAnalyzer:
         esol_2024_mask = self.data['Action to take'] == 'Urgent Replacement'
         esol_2025_mask = self.data['Action to take'] == 'Replace by 14/10/2025'
         
-        esol_2024_cost = self.data[esol_2024_mask]['Cost for Replacement $'].sum()
-        esol_2025_cost = self.data[esol_2025_mask]['Cost for Replacement $'].sum()
+        esol_2024_cost = self.data[esol_2024_mask]['Estimate Cost for Replacement $'].sum()
+        esol_2025_cost = self.data[esol_2025_mask]['Estimate Cost for Replacement $'].sum()
         total_cost = esol_2024_cost + esol_2025_cost
         
         results = {
@@ -187,7 +187,7 @@ class ESOLAnalyzer:
             self.load_data()
         if self.data is None:
             raise ValueError("Data not loaded")
-        os_distribution = self.data['Current OS Build'].value_counts().to_dict()
+        os_distribution = self.data['OS Build'].value_counts().to_dict()
         return os_distribution
     
     def calculate_okr_metrics(self) -> Dict[str, float]:
