@@ -65,7 +65,13 @@ python scripts/okr_dashboard.py
 ```
 
 ### 2. Simple ESOL Counter
-**`euc_count.py`** - Simple device counting with category filtering
+**`euc_count.py`** - Simple device counting with category filtering and site summary table
+
+**Features:**
+- Category-based ESOL device counting (2024, 2025, 2026, all)
+- Site summary table showing ESOL devices and replacement costs by location
+- Auto-saves reports to data/reports/ directory
+- Optional custom output paths
 
 #### Usage Examples:
 ```sh
@@ -76,6 +82,12 @@ python scripts/euc_count.py
 python scripts/euc_count.py --category esol_2024
 python scripts/euc_count.py --category esol_2025
 python scripts/euc_count.py --category esol_2026
+
+# Site summary table - ESOL devices and cost by site
+python scripts/euc_count.py --site-table
+
+# Combine category and site table
+python scripts/euc_count.py --category esol_2024 --site-table
 
 # Custom output location (optional)
 python scripts/euc_count.py --output "my_custom_report.md"
