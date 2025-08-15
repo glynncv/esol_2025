@@ -15,6 +15,7 @@ import sys
 from pathlib import Path
 from typing import Dict, Tuple, List
 import argparse
+from datetime import datetime
 
 class ESOLAnalyzer:
     """Analyzes ESOL (End of Service Life) device data for OKR tracking"""
@@ -101,8 +102,8 @@ class ESOLAnalyzer:
             raise ValueError("Data not loaded")
         
         # Check for kiosk indicators in user fields
-        current_user_kiosk = self.data['Current User Logged On'].str.contains('gid|kiosk', case=False, na=False)
-        last_user_kiosk = self.data['Last User Logged On'].str.contains('gid|kiosk', case=False, na=False)
+        current_user_kiosk = self.data['Current User LoggedOn'].str.contains('gid|kiosk', case=False, na=False)
+        last_user_kiosk = self.data['Last User LoggedOn'].str.contains('gid|kiosk', case=False, na=False)
         
         # Combine both conditions
         kiosk_mask = current_user_kiosk | last_user_kiosk
@@ -299,7 +300,7 @@ def main():
     """Main function with command line interface"""
     parser = argparse.ArgumentParser(description='Analyze ESOL device data for OKR tracking')
     parser.add_argument('filepath', nargs='?', default='data/raw/EUC_ESOL.xlsx', help='Path to the Excel file containing device data (default: data/raw/EUC_ESOL.xlsx)')
-    parser.add_argument('--output', '-o', help='Output file for the report (optional)')
+    parser.add_argument('--output', '-o', help='Output file for the report (optional - auto-saves to data/reports/ if not specified)')
     parser.add_argument('--json', action='store_true', help='Output metrics as JSON')
     
     args = parser.parse_args()
@@ -318,26 +319,44 @@ def main():
             json_output = json.dumps(metrics, indent=2)
             
             if args.output:
-                # Save JSON to file with UTF-8 encoding
+                # Save JSON to user-specified file
                 output_path = Path(args.output)
                 output_path.parent.mkdir(parents=True, exist_ok=True)
                 with open(output_path, 'w', encoding='utf-8') as f:
                     f.write(json_output)
                 print(f"📄 JSON metrics saved to {args.output}")
             else:
+                # Auto-save JSON to data/reports/
+                timestamp = datetime.now().strftime('%Y%m%d_%H%M%S')
+                output_dir = Path('data/reports')
+                output_dir.mkdir(parents=True, exist_ok=True)
+                filename = output_dir / f'ESOL_Metrics_{timestamp}.json'
+                
+                with open(filename, 'w', encoding='utf-8') as f:
+                    f.write(json_output)
+                print(f"📄 JSON metrics auto-saved to {filename}")
                 print(json_output)
         else:
             # Generate and display report
             report = analyzer.generate_report()
             
             if args.output:
-                # Save to file with UTF-8 encoding to handle emoji characters
+                # Save to user-specified file
                 output_path = Path(args.output)
                 output_path.parent.mkdir(parents=True, exist_ok=True)
                 with open(output_path, 'w', encoding='utf-8') as f:
                     f.write(report)
                 print(f"📄 Report saved to {args.output}")
             else:
+                # Auto-save to data/reports/
+                timestamp = datetime.now().strftime('%Y%m%d_%H%M%S')
+                output_dir = Path('data/reports')
+                output_dir.mkdir(parents=True, exist_ok=True)
+                filename = output_dir / f'ESOL_Analysis_{timestamp}.md'
+                
+                with open(filename, 'w', encoding='utf-8') as f:
+                    f.write(report)
+                print(f"📄 Report auto-saved to {filename}")
                 # Print to console
                 print(report)
                 

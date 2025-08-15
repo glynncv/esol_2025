@@ -848,7 +848,7 @@ def main():
     parser.add_argument('filepath', nargs='?', default='data/raw/EUC_ESOL.xlsx',
                        help='Path to the Excel file containing device data (default: data/raw/EUC_ESOL.xlsx)')
     parser.add_argument('--config-path', default='config/', help='Path to configuration directory')
-    parser.add_argument('--output', '-o', help='Output file for the report (optional)')
+    parser.add_argument('--output', '-o', help='Output file for the report (optional - auto-saves to data/reports/ if not specified)')
     parser.add_argument('--format', choices=['full', 'executive', 'site', 'json', 'quick'], 
                        default='full', help='Report format')
     parser.add_argument('--top-sites', type=int, default=5, 
@@ -895,7 +895,7 @@ Total Investment: {metrics['excluded_device_count']} devices requiring replaceme
         
         # Output report
         if args.output:
-            # Ensure output directory exists
+            # User specified output path
             output_path = Path(args.output)
             output_path.parent.mkdir(parents=True, exist_ok=True)
             
@@ -903,6 +903,28 @@ Total Investment: {metrics['excluded_device_count']} devices requiring replaceme
                 f.write(report)
             print(f"📄 Report saved to {output_path}")
         else:
+            # Auto-save to data/reports/ with timestamp
+            timestamp = datetime.now().strftime('%Y%m%d_%H%M%S')
+            output_dir = Path('data/reports')
+            output_dir.mkdir(parents=True, exist_ok=True)
+            
+            # Generate filename based on format
+            if args.format == 'executive':
+                filename = output_dir / f'Executive_Summary_{timestamp}.md'
+            elif args.format == 'full':
+                filename = output_dir / f'Full_OKR_Report_{timestamp}.md'
+            elif args.format == 'site':
+                filename = output_dir / f'Site_Analysis_{timestamp}.md'
+            elif args.format == 'quick':
+                filename = output_dir / f'Quick_Status_{timestamp}.md'
+            elif args.format == 'json':
+                filename = output_dir / f'OKR_Metrics_{timestamp}.json'
+            else:
+                filename = output_dir / f'Report_{timestamp}.md'
+            
+            with open(filename, 'w', encoding='utf-8') as f:
+                f.write(report)
+            print(f"📄 Report auto-saved to {filename}")
             print(report)
             
     except KeyboardInterrupt:
