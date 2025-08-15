@@ -6,7 +6,7 @@ This project provides tools to analyze End User Computing (EUC) device data for 
 
 - `scripts/` — Python scripts for analysis
 - `data/raw/` — Raw input data (Excel files, not tracked in git)
-- `data/processed/` — Processed outputs and exports (e.g., per-site summaries)
+- `data/processed/` — Processed outputs and exports (e.g., per-site summaries, auto-generated site tables)
 - `data/reports/` — Reports and executive summaries (auto-saved by all scripts)
 - `config/` — YAML configuration files for OKR criteria and ESOL definitions
 
@@ -70,6 +70,7 @@ python scripts/okr_dashboard.py
 **Features:**
 - Category-based ESOL device counting (2024, 2025, 2026, all)
 - Site summary table showing ESOL devices and replacement costs by location
+- **Auto-exports site data to `data/processed/`** (CSV + JSON formats)
 - Auto-saves reports to data/reports/ directory
 - Optional custom output paths
 
@@ -84,6 +85,7 @@ python scripts/euc_count.py --category esol_2025
 python scripts/euc_count.py --category esol_2026
 
 # Site summary table - ESOL devices and cost by site
+# Auto-exports to data/processed/ (CSV + JSON)
 python scripts/euc_count.py --site-table
 
 # Combine category and site table
@@ -147,6 +149,23 @@ python scripts/esol-data-analysis-python.py --output "cost_analysis.md"
 - `Quick_Status_{timestamp}.md` - from `separated_esol_analyzer.py`
 - `ESOL_Analysis_{timestamp}.md` - from `esol-data-analysis-python.py`
 - `OKR_Metrics_{timestamp}.json` - from `separated_esol_analyzer.py`
+
+## 📊 Processed Data Exports
+
+**Site analysis data automatically exported to `data/processed/` for further analysis:**
+
+### Site Summary Exports:
+- **CSV Format**: `site_esol_summary_{timestamp}.csv` - Excel/Sheets compatible
+- **JSON Format**: `site_esol_summary_{timestamp}.json` - API/programmatic use
+- **Data Includes**: ESOL counts by year (2024, 2025, 2026), total devices, replacement costs
+- **Auto-generated**: Created automatically when using `--site-table` option
+
+### Export Location:
+```
+data/processed/
+├── site_esol_summary_20250815_112356.csv  ← CSV format
+└── site_esol_summary_20250815_112356.json ← JSON format
+```
 
 ## Batch Files (Windows)
 

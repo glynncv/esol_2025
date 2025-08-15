@@ -4,16 +4,59 @@ from pathlib import Path
 from datetime import datetime
 
 def main():
-    # Set up command line argument parsing
+    """Analyze ESOL device counts by category and optionally export site summary table."""
     parser = argparse.ArgumentParser(description='Analyze ESOL device counts by category')
     parser.add_argument('--category', choices=['esol_2024', 'esol_2025', 'esol_2026', 'all'], 
                        default='all', help='ESOL category to analyze (default: all)')
     parser.add_argument('--output', '-o', help='Output file for the report (optional - auto-saves to data/reports/ if not specified)')
+    parser.add_argument('--site-table', action='store_true', help='Export ESOL devices and cost by site')
     
     args = parser.parse_args()
     
     # Read the Excel file
     df = pd.read_excel('data/raw/EUC_ESOL.xlsx')
+    
+    if args.site_table:
+        # Generate site summary table
+        # Filter for ESOL devices only (all three categories)
+        esol_df = df[df['Action to take'].isin(['Urgent Replacement', 'Replace by 14/10/2025', 'Replace by 11/11/2026'])]
+        
+        # Group by site and calculate counts and costs
+        site_data = esol_df.groupby('Site Location').agg({
+            'Action to take': lambda x: (x == 'Urgent Replacement').sum(),  # ESOL 2024
+            'Estimate Cost for Replacement $': 'sum'  # Total cost for all ESOL devices
+        }).rename(columns={'Action to take': 'ESOL_2024_Count', 'Estimate Cost for Replacement $': 'Total_Cost'})
+        
+        site_data['ESOL_2025_Count'] = esol_df.groupby('Site Location')['Action to take'].apply(lambda x: (x == 'Replace by 14/10/2025').sum())
+        site_data['ESOL_2026_Count'] = esol_df.groupby('Site Location')['Action to take'].apply(lambda x: (x == 'Replace by 11/11/2026').sum())
+        site_data['Total_ESOL'] = site_data['ESOL_2024_Count'] + site_data['ESOL_2025_Count'] + site_data['ESOL_2026_Count']
+        
+        # Reorder columns to match preferred structure
+        site_data = site_data[['ESOL_2024_Count', 'ESOL_2025_Count', 'ESOL_2026_Count', 'Total_ESOL', 'Total_Cost']]
+        
+        site_data = site_data[site_data['Total_ESOL'] > 0].sort_values('Total_ESOL', ascending=False)
+        
+        # Export to data/processed
+        timestamp = datetime.now().strftime('%Y%m%d_%H%M%S')
+        processed_dir = Path('data/processed')
+        processed_dir.mkdir(parents=True, exist_ok=True)
+        
+        # Export as CSV
+        csv_file = processed_dir / f'site_esol_summary_{timestamp}.csv'
+        site_data.to_csv(csv_file)
+        
+        # Export as JSON
+        json_file = processed_dir / f'site_esol_summary_{timestamp}.json'
+        site_data.to_json(json_file, orient='index', indent=2)
+        
+        print("Site Summary - ESOL Devices and Cost:")
+        print("=" * 70)
+        for site, row in site_data.iterrows():
+            print(f"{site}: {int(row['Total_ESOL'])} devices (2024: {int(row['ESOL_2024_Count'])}, 2025: {int(row['ESOL_2025_Count'])}, 2026: {int(row['ESOL_2026_Count'])}) - ${row['Total_Cost']:,.0f}")
+        print(f"\n📊 Site table exported to:")
+        print(f"   CSV: {csv_file}")
+        print(f"   JSON: {json_file}")
+        return
     
     total = len(df)
     print(f"Total devices: {total}")
