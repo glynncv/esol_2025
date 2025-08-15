@@ -7,7 +7,7 @@ This project provides tools to analyze End User Computing (EUC) device data for 
 - `scripts/` — Python scripts for analysis
 - `data/raw/` — Raw input data (Excel files, not tracked in git)
 - `data/processed/` — Processed outputs and exports (e.g., per-site summaries)
-- `data/reports/` — Reports and executive summaries
+- `data/reports/` — Reports and executive summaries (auto-saved by all scripts)
 - `config/` — YAML configuration files for OKR criteria and ESOL definitions
 
 ## Setup
@@ -69,13 +69,16 @@ python scripts/okr_dashboard.py
 
 #### Usage Examples:
 ```sh
-# All categories (default)
+# All categories (default) - auto-saves to data/reports/
 python scripts/euc_count.py
 
-# Specific categories
+# Specific categories - auto-saves to data/reports/
 python scripts/euc_count.py --category esol_2024
 python scripts/euc_count.py --category esol_2025
 python scripts/euc_count.py --category esol_2026
+
+# Custom output location (optional)
+python scripts/euc_count.py --output "my_custom_report.md"
 ```
 
 ### 3. Advanced OKR Analyzer
@@ -83,21 +86,55 @@ python scripts/euc_count.py --category esol_2026
 
 #### Usage Examples:
 ```sh
-# Quick status check
+# Quick status check - auto-saves to data/reports/
 python scripts/separated_esol_analyzer.py --format quick
 
-# Executive summary
+# Executive summary - auto-saves to data/reports/
 python scripts/separated_esol_analyzer.py --format executive
 
-# Full OKR tracker
+# Full OKR tracker - auto-saves to data/reports/
 python scripts/separated_esol_analyzer.py --format full
 
-# Site analysis
+# Site analysis - auto-saves to data/reports/
 python scripts/separated_esol_analyzer.py --format site --top-sites 10
 
-# JSON export
+# JSON export - auto-saves to data/reports/
 python scripts/separated_esol_analyzer.py --format json
+
+# Custom output location (optional)
+python scripts/separated_esol_analyzer.py --format executive --output "special_report.md"
 ```
+
+### 4. ESOL Data Analysis
+**`esol-data-analysis-python.py`** - Comprehensive ESOL analysis with cost projections
+
+#### Usage Examples:
+```sh
+# Full analysis - auto-saves to data/reports/
+python scripts/esol-data-analysis-python.py
+
+# JSON metrics - auto-saves to data/reports/
+python scripts/esol-data-analysis-python.py --json
+
+# Custom output location (optional)
+python scripts/esol-data-analysis-python.py --output "cost_analysis.md"
+```
+
+## 📁 Auto-Save Reports
+
+**All scripts now automatically save reports to `data/reports/` when no output path is specified:**
+
+- **Timestamped files**: No more overwriting previous reports
+- **Format-specific naming**: Each script generates appropriately named files
+- **Consistent behavior**: Same auto-save pattern across all analysis scripts
+- **Optional custom paths**: Still supports `--output` parameter for custom locations
+
+### Report File Naming:
+- `ESOL_Count_{category}_{timestamp}.md` - from `euc_count.py`
+- `Executive_Summary_{timestamp}.md` - from `separated_esol_analyzer.py`
+- `Quick_Status_{timestamp}.md` - from `separated_esol_analyzer.py`
+- `ESOL_Analysis_{timestamp}.md` - from `esol-data-analysis-python.py`
+- `OKR_Metrics_{timestamp}.json` - from `separated_esol_analyzer.py`
 
 ## Batch Files (Windows)
 
