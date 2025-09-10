@@ -38,7 +38,7 @@ For quick device counts and categories:
 .\run_simple_analysis.bat
 
 # Or directly with Python
-python scripts/euc_count.py
+python scripts/esol_count.py
 ```
 
 ### 🖥️ Kiosk EUC Analysis
@@ -49,6 +49,16 @@ For Kiosk device analysis and Windows 11 migration status:
 
 # Or directly with Python
 python scripts/kiosk_count.py
+```
+
+### 💻 Windows 11 EUC Analysis
+For Windows 11 device counting:
+```bat
+# Windows batch file
+.\run_win11_analysis.bat
+
+# Or directly with Python
+python scripts/win11_count.py
 ```
 
 ### 🔧 Configuration Helper
@@ -101,7 +111,7 @@ python scripts/okr_tracker.py data/raw/EUC_ESOL.xlsx --save-metrics current_metr
 ```
 
 ### 3. Simple ESOL Counter
-**`euc_count.py`** - Simple device counting with category filtering and site summary table
+**`esol_count.py`** - Simple device counting with category filtering and site summary table
 
 **Features:**
 - Category-based ESOL device counting (2024, 2025, 2026, all)
@@ -113,22 +123,22 @@ python scripts/okr_tracker.py data/raw/EUC_ESOL.xlsx --save-metrics current_metr
 #### Usage Examples:
 ```sh
 # All categories (default) - auto-saves to data/reports/
-python scripts/euc_count.py
+python scripts/esol_count.py
 
 # Specific categories - auto-saves to data/reports/
-python scripts/euc_count.py --category esol_2024
-python scripts/euc_count.py --category esol_2025
-python scripts/euc_count.py --category esol_2026
+python scripts/esol_count.py --category esol_2024
+python scripts/esol_count.py --category esol_2025
+python scripts/esol_count.py --category esol_2026
 
 # Site summary table - ESOL devices and cost by site
 # Auto-exports to data/processed/ (CSV + JSON)
-python scripts/euc_count.py --site-table
+python scripts/esol_count.py --site-table
 
 # Combine category and site table
-python scripts/euc_count.py --category esol_2024 --site-table
+python scripts/esol_count.py --category esol_2024 --site-table
 
 # Custom output location (optional)
-python scripts/euc_count.py --output "my_custom_report.md"
+python scripts/esol_count.py --output "my_custom_report.md"
 ```
 
 ### 4. Advanced OKR Analyzer
@@ -174,7 +184,24 @@ python scripts/kiosk_count.py
 python scripts/kiosk_count.py --output "kiosk_analysis.md"
 ```
 
-### 6. ESOL Data Analysis
+### 6. Windows 11 EUC Analysis
+**`win11_count.py`** - Count Windows 11 EUCs based on OS Build criteria
+
+#### Features:
+- **Windows 11 detection** using OS Build column (begins with "Win11")
+- **Simple counting** with percentage calculations
+- **Auto-saves reports** to data/reports/ directory
+
+#### Usage Examples:
+```sh
+# Basic Windows 11 analysis - auto-saves to data/reports/
+python scripts/win11_count.py
+
+# Custom output location (optional)
+python scripts/win11_count.py --output "win11_analysis.md"
+```
+
+### 7. ESOL Data Analysis
 **`esol-data-analysis-python.py`** - Comprehensive ESOL analysis with cost projections
 
 #### Usage Examples:
@@ -200,8 +227,9 @@ python scripts/esol-data-analysis-python.py --output "cost_analysis.md"
 
 ### Report File Naming:
 - `OKR_Tracker_{timestamp}.md` - from `okr_tracker.py` (auto-saves to data/reports/)
-- `ESOL_Count_{category}_{timestamp}.md` - from `euc_count.py`
+- `ESOL_Count_{category}_{timestamp}.md` - from `esol_count.py`
 - `Kiosk_Count_{timestamp}.md` - from `kiosk_count.py`
+- `Win11_Count_{timestamp}.md` - from `win11_count.py`
 - `Executive_Summary_{timestamp}.md` - from `separated_esol_analyzer.py`
 - `Quick_Status_{timestamp}.md` - from `separated_esol_analyzer.py`
 - `ESOL_Analysis_{timestamp}.md` - from `esol-data-analysis-python.py`
@@ -295,6 +323,19 @@ Kiosk EUC analysis with Windows 11 migration status:
 
 # Custom output location
 .\run_kiosk_analysis.bat custom_kiosk_report.md
+```
+
+### `run_win11_analysis.bat` (NEW)
+Windows 11 EUC analysis and counting:
+```cmd
+# Show help
+.\run_win11_analysis.bat help
+
+# Basic Windows 11 analysis (auto-saves to data/reports/)
+.\run_win11_analysis.bat
+
+# Custom output location
+.\run_win11_analysis.bat custom_win11_report.md
 ```
 
 ## Current Data Summary
