@@ -41,6 +41,16 @@ For quick device counts and categories:
 python scripts/euc_count.py
 ```
 
+### 🖥️ Kiosk EUC Analysis
+For Kiosk device analysis and Windows 11 migration status:
+```bat
+# Windows batch file
+.\run_kiosk_analysis.bat
+
+# Or directly with Python
+python scripts/kiosk_count.py
+```
+
 ### 🔧 Configuration Helper
 Manage and validate OKR settings:
 ```sh
@@ -145,7 +155,26 @@ python scripts/separated_esol_analyzer.py --format json
 python scripts/separated_esol_analyzer.py --format executive --output "special_report.md"
 ```
 
-### 5. ESOL Data Analysis
+### 5. Kiosk EUC Analysis
+**`kiosk_count.py`** - Analyze Kiosk EUC counts and Windows 11 migration status
+
+#### Features:
+- **Kiosk detection** using configurable patterns (Device Name contains "SHP" OR Current User LoggedOn contains "Kiosk")
+- **Enterprise vs LTSC breakdown** with percentages
+- **Windows 11 migration analysis** for LTSC Kiosk machines
+- **YAML configuration** integration for flexible pattern matching
+- **Auto-saves reports** to data/reports/ directory
+
+#### Usage Examples:
+```sh
+# Basic kiosk analysis - auto-saves to data/reports/
+python scripts/kiosk_count.py
+
+# Custom output location (optional)
+python scripts/kiosk_count.py --output "kiosk_analysis.md"
+```
+
+### 6. ESOL Data Analysis
 **`esol-data-analysis-python.py`** - Comprehensive ESOL analysis with cost projections
 
 #### Usage Examples:
@@ -172,6 +201,7 @@ python scripts/esol-data-analysis-python.py --output "cost_analysis.md"
 ### Report File Naming:
 - `OKR_Tracker_{timestamp}.md` - from `okr_tracker.py` (auto-saves to data/reports/)
 - `ESOL_Count_{category}_{timestamp}.md` - from `euc_count.py`
+- `Kiosk_Count_{timestamp}.md` - from `kiosk_count.py`
 - `Executive_Summary_{timestamp}.md` - from `separated_esol_analyzer.py`
 - `Quick_Status_{timestamp}.md` - from `separated_esol_analyzer.py`
 - `ESOL_Analysis_{timestamp}.md` - from `esol-data-analysis-python.py`
@@ -252,6 +282,19 @@ Quick ESOL analysis with category filtering:
 .\run_simple_analysis.bat esol_2024
 .\run_simple_analysis.bat esol_2025
 .\run_simple_analysis.bat esol_2026
+```
+
+### `run_kiosk_analysis.bat` (NEW)
+Kiosk EUC analysis with Windows 11 migration status:
+```cmd
+# Show help
+.\run_kiosk_analysis.bat help
+
+# Basic kiosk analysis (auto-saves to data/reports/)
+.\run_kiosk_analysis.bat
+
+# Custom output location
+.\run_kiosk_analysis.bat custom_kiosk_report.md
 ```
 
 ## Current Data Summary
