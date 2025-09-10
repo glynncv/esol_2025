@@ -51,7 +51,7 @@ Priority Actions:
 2. 🟡 Q3 Planning: {metrics['kr2_milestone_target_devices']} ESOL 2025 devices  
 3. 🟢 Re-provision: {metrics['enterprise_kiosk_count']} Enterprise kiosk devices
 
-Total Investment: {metrics['excluded_device_count']} devices requiring replacement
+Total Investment: {metrics['total_devices'] - metrics['compatible_device_count']} devices requiring replacement
 """)
     except Exception as e:
         print(f"❌ Error: {e}")

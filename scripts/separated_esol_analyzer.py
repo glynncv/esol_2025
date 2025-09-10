@@ -119,7 +119,9 @@ class ConfigManager:
                     'logic': 'OR'
                 },
                 'windows11_compatibility': {
-                    'exclude_esol_categories': ['esol_2024', 'esol_2025'],
+                    'migration_categories': ['esol_2024', 'esol_2025'],
+                    'target_editions': ['Enterprise'],
+                    'exclude_editions': ['LTSC'],
                     'win11_patterns': ['Win11']
                 }
             }
@@ -322,21 +324,31 @@ class DataAnalyzer:
         kiosk_config = self.config['kiosk_detection']
         user_mapping = self.data_mapping['user_columns']
         edition_col = self.data_mapping['edition_column']
+        device_name_col = self.data_mapping['device_name_column']
         
-        patterns = '|'.join(kiosk_config['patterns'])
+        # Get patterns for device name and user fields
+        device_patterns = '|'.join(kiosk_config['device_name_patterns'])
+        user_patterns = '|'.join(kiosk_config['user_loggedon_patterns'])
         case_sensitive = kiosk_config['case_sensitive']
+        
+        # Check device name for kiosk patterns
+        device_mask = df[device_name_col].str.contains(
+            device_patterns, case=case_sensitive, na=False)
         
         # Check user fields for kiosk patterns
         current_mask = df[user_mapping['current']].str.contains(
-            patterns, case=case_sensitive, na=False)
+            user_patterns, case=case_sensitive, na=False)
         last_mask = df[user_mapping['last']].str.contains(
-            patterns, case=case_sensitive, na=False)
+            user_patterns, case=case_sensitive, na=False)
         
-        # Apply logic (OR/AND)
+        # Apply logic (OR/AND) for user fields
         if kiosk_config['logic'].upper() == 'OR':
-            kiosk_mask = current_mask | last_mask
+            user_mask = current_mask | last_mask
         else:  # AND logic
-            kiosk_mask = current_mask & last_mask
+            user_mask = current_mask & last_mask
+        
+        # Combine device name and user patterns with OR logic
+        kiosk_mask = device_mask | user_mask
         
         kiosk_devices = df[kiosk_mask]
         
@@ -413,16 +425,18 @@ class BusinessLogicCalculator:
         """Calculate Windows 11 compatibility based on configuration"""
         total_devices = raw_counts['total_devices']
         
-        # Calculate excluded ESOL count based on configuration
-        exclude_categories = self.esol_config['windows11_compatibility']['exclude_esol_categories']
-        excluded_count = sum(raw_counts[f"{cat}_count"] for cat in exclude_categories)
+        # Calculate Enterprise Windows 11 adoption path
+        migration_categories = self.esol_config['windows11_compatibility']['migration_categories']
+        enterprise_esol_count = sum(raw_counts[f"{cat}_count"] for cat in migration_categories)
+        enterprise_win11_count = raw_counts['win11_count']
         
-        compatible_count = total_devices - excluded_count
+        compatible_count = enterprise_win11_count + enterprise_esol_count
         compatibility_percentage = (compatible_count / total_devices) * 100 if total_devices > 0 else 0
         
         return {
             'compatible_device_count': compatible_count,
-            'excluded_device_count': excluded_count,
+            'enterprise_win11_count': enterprise_win11_count,
+            'enterprise_esol_count': enterprise_esol_count,
             'compatibility_percentage': compatibility_percentage
         }
     
@@ -643,7 +657,7 @@ class PresentationFormatter:
 
 | Category | Total | Compatible | Incompatible | Target | Current | Gap | Status |
 |----------|-------|------------|--------------|--------|---------|-----|--------|
-| All Devices | {metrics['total_devices']} | {metrics['compatible_device_count']} ({compatibility_pct:.1f}%) | {metrics['excluded_device_count']} ({100-compatibility_pct:.1f}%) | {target_pct}% | {compatibility_pct:.1f}% | {gap:.1f}% | {status_emoji} {status_text} |
+| All Devices | {metrics['total_devices']} | {metrics['compatible_device_count']} ({compatibility_pct:.1f}%) | {metrics['total_devices'] - metrics['compatible_device_count']} ({100-compatibility_pct:.1f}%) | {target_pct}% | {compatibility_pct:.1f}% | {gap:.1f}% | {status_emoji} {status_text} |
 
 **Windows 11 Compatibility Progress:**
 - {compat_progress_bar} {compatibility_pct:.1f}% Complete
@@ -652,7 +666,7 @@ class PresentationFormatter:
 - {adoption_progress_bar} {win11_adoption_pct:.1f}% Complete
 
 **Action Plan:**
-- Address all {metrics['excluded_device_count']} ESOL devices through remediation plan
+- Address all {metrics['total_devices'] - metrics['compatible_device_count']} ESOL devices through remediation plan
 - Continue migration plan for compatible Enterprise devices
 - Special handling for kiosk devices to be re-provisioned to LTSC
 
@@ -711,7 +725,7 @@ class PresentationFormatter:
 - Total Devices: {metrics['total_devices']:,}
 - ESOL 2024: {metrics['esol_2024_count']} devices ({metrics['esol_2024_percentage']:.2f}%)
 - ESOL 2025: {metrics['esol_2025_count']} devices ({metrics['esol_2025_percentage']:.2f}%)
-- **Total ESOL: {metrics['excluded_device_count']} devices ({100-metrics['compatibility_percentage']:.2f}%)**
+- **Total ESOL: {metrics['total_devices'] - metrics['compatible_device_count']} devices ({100-metrics['compatibility_percentage']:.2f}%)**
 - Non-ESOL: {metrics['compatible_device_count']} devices ({metrics['compatibility_percentage']:.2f}%)
 
 ---
@@ -752,7 +766,7 @@ class PresentationFormatter:
 ## Key Highlights
 - **ESOL 2024**: {all_metrics['esol_2024_count']} devices require immediate replacement
 - **Windows 11 Compatibility**: {all_metrics['compatibility_percentage']:.1f}% achieved (target: 90%)
-- **Total Investment Required**: Procurement needed for {all_metrics['excluded_device_count']} devices
+- **Total Investment Required**: Procurement needed for {all_metrics['total_devices'] - all_metrics['compatible_device_count']} devices
 
 ## Critical Actions Required
 1. **Immediate**: Procure {all_metrics['esol_2024_count']} ESOL 2024 devices by June 30
@@ -905,7 +919,7 @@ Priority Actions:
 2. 🟡 Q3 Planning: {metrics['kr2_milestone_target_devices']} ESOL 2025 devices  
 3. 🟢 Re-provision: {metrics['enterprise_kiosk_count']} Enterprise kiosk devices
 
-Total Investment: {metrics['excluded_device_count']} devices requiring replacement
+Total Investment: {metrics['total_devices'] - metrics['compatible_device_count']} devices requiring replacement
 """
         elif args.format == 'json':
             import json
