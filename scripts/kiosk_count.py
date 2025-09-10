@@ -77,6 +77,9 @@ def main():
     report_lines.append("## LTSC Kiosk Windows 11 Migration Status")
     report_lines.append(f"- **Total # of LTSC Kiosk EUCs:** {ltsc_kiosk_count:,}")
     report_lines.append(f"- **Total # (%) of LTSC Kiosk EUCs not yet migrated to Windows 11:** {ltsc_not_win11_count:,} ({ltsc_not_win11_pct}%)")
+    report_lines.append("")
+    report_lines.append("**Note:** LTSC Kiosk devices are excluded from the 2025 Windows 11 push strategy.")
+    report_lines.append("Only Enterprise Kiosk devices are targeted for Windows 11 migration.")
     
     # Print to console
     print(f"Total # of Kiosk EUCs: {total_kiosk:,}")

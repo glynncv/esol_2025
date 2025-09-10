@@ -185,11 +185,12 @@ python scripts/kiosk_count.py --output "kiosk_analysis.md"
 ```
 
 ### 6. Windows 11 EUC Analysis
-**`win11_count.py`** - Count Windows 11 EUCs based on OS Build criteria
+**`win11_count.py`** - Analyze Windows 11 adoption for Enterprise EUCs (2025 push strategy)
 
 #### Features:
-- **Windows 11 detection** using OS Build column (begins with "Win11")
-- **Simple counting** with percentage calculations
+- **Enterprise-focused analysis** - Only counts Enterprise EUCs (the 2025 Windows 11 push target)
+- **Migration pathway tracking** - Shows current Win11 + ESOL replacement pathway
+- **LTSC exclusion** - LTSC devices excluded from Windows 11 push strategy
 - **Auto-saves reports** to data/reports/ directory
 
 #### Usage Examples:

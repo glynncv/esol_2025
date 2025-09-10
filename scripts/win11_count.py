@@ -2,31 +2,74 @@ import pandas as pd
 import argparse
 from pathlib import Path
 from datetime import datetime
+import sys
+
+# Add the scripts directory to the path
+sys.path.append(str(Path(__file__).parent))
+
+from separated_esol_analyzer import ConfigManager
 
 def main():
-    """Analyze Windows 11 EUC counts and export summary report."""
-    parser = argparse.ArgumentParser(description='Analyze Windows 11 EUC counts')
+    """Analyze Windows 11 EUC counts focused on Enterprise devices and export summary report."""
+    parser = argparse.ArgumentParser(description='Analyze Windows 11 EUC counts for Enterprise devices')
     parser.add_argument('--output', '-o', help='Output file for the report (optional - auto-saves to data/reports/ if not specified)')
     args = parser.parse_args()
+    
+    # Load configuration
+    config_manager = ConfigManager()
+    esol_config = config_manager.get_esol_criteria()
+    win11_config = esol_config['windows11_compatibility']
+    data_mapping = esol_config['data_mapping']
     
     # Read the Excel file
     df = pd.read_excel('data/raw/EUC_ESOL.xlsx')
     
-    # Filter for Windows 11 EUCs - Column "OS Build" begins with "Win11"
-    win11_mask = df['OS Build'].str.startswith('Win11', na=False)
-    total_eucs = len(df)
-    total_win11 = len(df[win11_mask])
-    win11_pct = round((total_win11 / total_eucs) * 100, 2) if total_eucs > 0 else 0
+    # Get column mappings
+    os_col = data_mapping['os_column']
+    edition_col = data_mapping['edition_column']
+    action_col = data_mapping['action_column']
+    
+    # Filter for Enterprise EUCs only (the 2025 Windows 11 push target)
+    enterprise_mask = df[edition_col] == 'Enterprise'
+    enterprise_df = df[enterprise_mask]
+    
+    # Count Enterprise EUCs already on Windows 11
+    win11_patterns = win11_config['win11_patterns']
+    win11_pattern = '|'.join(win11_patterns)
+    enterprise_win11_mask = enterprise_df[os_col].str.contains(win11_pattern, case=False, na=False)
+    enterprise_win11_count = len(enterprise_df[enterprise_win11_mask])
+    
+    # Count Enterprise EUCs that will get Windows 11 via ESOL replacement
+    migration_categories = win11_config['migration_categories']
+    migration_actions = [esol_config['esol_categories'][cat]['action_value'] for cat in migration_categories]
+    enterprise_esol_mask = enterprise_df[action_col].isin(migration_actions)
+    enterprise_esol_count = len(enterprise_df[enterprise_esol_mask])
+    
+    # Calculate totals
+    total_enterprise = len(enterprise_df)
+    total_enterprise_win11_path = enterprise_win11_count + enterprise_esol_count
+    win11_adoption_pct = round((total_enterprise_win11_path / total_enterprise) * 100, 2) if total_enterprise > 0 else 0
+    current_win11_pct = round((enterprise_win11_count / total_enterprise) * 100, 2) if total_enterprise > 0 else 0
     
     # Generate report content
-    report_content = f"""# Windows 11 EUC Count Analysis - {datetime.now().strftime('%Y-%m-%d %H:%M:%S')}
+    report_content = f"""# Windows 11 EUC Analysis - Enterprise Focus - {datetime.now().strftime('%Y-%m-%d %H:%M:%S')}
 
-**Total # of EUCs:** {total_eucs:,}
-**Total # (%) of Win 11 EUCs:** {total_win11:,} ({win11_pct}%)"""
+## Enterprise EUC Windows 11 Strategy
+**Total Enterprise EUCs:** {total_enterprise:,}
+**Enterprise EUCs already on Windows 11:** {enterprise_win11_count:,} ({current_win11_pct}%)
+**Enterprise EUCs getting Windows 11 via ESOL replacement:** {enterprise_esol_count:,}
+**Total Enterprise Windows 11 adoption path:** {total_enterprise_win11_path:,} ({win11_adoption_pct}%)
+
+## Summary
+- **Current Windows 11 adoption:** {current_win11_pct}% of Enterprise EUCs
+- **Projected Windows 11 adoption:** {win11_adoption_pct}% of Enterprise EUCs (via replacement + upgrade)
+- **LTSC devices excluded:** Not part of 2025 Windows 11 push strategy"""
     
     # Print to console
-    print(f"Total # of EUCs: {total_eucs:,}")
-    print(f"Total # (%) of Win 11 EUCs: {total_win11:,} ({win11_pct}%)")
+    print(f"Total Enterprise EUCs: {total_enterprise:,}")
+    print(f"Enterprise EUCs already on Windows 11: {enterprise_win11_count:,} ({current_win11_pct}%)")
+    print(f"Enterprise EUCs getting Windows 11 via ESOL replacement: {enterprise_esol_count:,}")
+    print(f"Total Enterprise Windows 11 adoption path: {total_enterprise_win11_path:,} ({win11_adoption_pct}%)")
     
     # Save report
     if args.output:

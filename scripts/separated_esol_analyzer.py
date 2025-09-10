@@ -286,16 +286,35 @@ class DataAnalyzer:
         enterprise_count = len(df[df[edition_col] == 'Enterprise'])
         ltsc_count = len(df[df[edition_col] == 'LTSC'])
         
-        # Count Windows 11 devices
+        # Count Windows 11 devices (Enterprise focus for 2025 push)
         win11_patterns = '|'.join(self.config['windows11_compatibility']['win11_patterns'])
-        win11_count = len(df[df[os_col].str.contains(win11_patterns, na=False)])
+        
+        # Filter for Enterprise devices only (the 2025 Windows 11 push target)
+        enterprise_mask = df[edition_col] == 'Enterprise'
+        enterprise_df = df[enterprise_mask]
+        
+        # Count Enterprise devices already on Windows 11
+        enterprise_win11_count = len(enterprise_df[enterprise_df[os_col].str.contains(win11_patterns, na=False)])
+        
+        # Count Enterprise devices that will get Windows 11 via ESOL replacement
+        migration_categories = self.config['windows11_compatibility']['migration_categories']
+        migration_actions = [self.esol_categories[cat]['action_value'] for cat in migration_categories]
+        enterprise_esol_mask = enterprise_df[action_col].isin(migration_actions)
+        enterprise_esol_count = len(enterprise_df[enterprise_esol_mask])
+        
+        # Calculate Enterprise Windows 11 adoption path
+        total_enterprise_win11_path = enterprise_win11_count + enterprise_esol_count
+        enterprise_win11_adoption_pct = (total_enterprise_win11_path / len(enterprise_df)) * 100 if len(enterprise_df) > 0 else 0
         
         return {
             'total_devices': total_devices,
             **esol_counts,
             'enterprise_count': enterprise_count,
             'ltsc_count': ltsc_count,
-            'win11_count': win11_count
+            'win11_count': enterprise_win11_count,  # Enterprise devices already on Win11
+            'enterprise_win11_adoption_count': total_enterprise_win11_path,
+            'enterprise_win11_adoption_percentage': enterprise_win11_adoption_pct,
+            'enterprise_esol_count': enterprise_esol_count
         }
     
     def extract_kiosk_counts(self, df: pd.DataFrame) -> Dict[str, int]:

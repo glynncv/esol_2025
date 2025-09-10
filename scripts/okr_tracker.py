@@ -98,29 +98,43 @@ class ESOLDataAnalyzer:
         }
     
     def analyze_windows11_status(self) -> Dict[str, Any]:
-        """Analyze Windows 11 compatibility and adoption"""
+        """Analyze Windows 11 compatibility and adoption for Enterprise devices only"""
         if self.data is None:
             self.load_data()
         
-        # Count Windows 11 devices
-        win11_mask = self.data['os_build'].str.contains('Win11', na=False)
-        win11_count = win11_mask.sum()
+        # Filter for Enterprise devices only (the 2025 Windows 11 push target)
+        enterprise_mask = self.data['edition'] == 'Enterprise'
+        enterprise_df = self.data[enterprise_mask]
         
-        # Count by edition
+        # Count Enterprise devices already on Windows 11
+        win11_mask = enterprise_df['os_build'].str.contains('Win11', na=False)
+        enterprise_win11_count = win11_mask.sum()
+        
+        # Count Enterprise devices that will get Windows 11 via ESOL replacement
+        esol_data = self.analyze_esol_categories()
+        enterprise_esol_mask = enterprise_df['action_to_take'].isin(['Urgent Replacement', 'Replace by 14/10/2025'])
+        enterprise_esol_count = enterprise_esol_mask.sum()
+        
+        # Calculate Enterprise Windows 11 adoption path
+        total_enterprise = len(enterprise_df)
+        total_enterprise_win11_path = enterprise_win11_count + enterprise_esol_count
+        enterprise_win11_adoption_pct = (total_enterprise_win11_path / total_enterprise) * 100 if total_enterprise > 0 else 0
+        current_win11_pct = (enterprise_win11_count / total_enterprise) * 100 if total_enterprise > 0 else 0
+        
+        # Count by edition (for reference)
         enterprise_count = (self.data['edition'] == 'Enterprise').sum()
         ltsc_count = (self.data['edition'] == 'LTSC').sum()
         
-        # Calculate compatibility (exclude ESOL devices)
-        esol_data = self.analyze_esol_categories()
-        compatible_devices = self.total_devices - esol_data['total_esol_count']
-        
         return {
-            'win11_count': win11_count,
-            'win11_adoption_percentage': (win11_count / self.total_devices) * 100,
+            'win11_count': enterprise_win11_count,
+            'win11_adoption_percentage': current_win11_pct,
+            'enterprise_win11_adoption_percentage': enterprise_win11_adoption_pct,
+            'enterprise_win11_path_count': total_enterprise_win11_path,
+            'enterprise_esol_count': enterprise_esol_count,
             'enterprise_count': enterprise_count,
             'ltsc_count': ltsc_count,
-            'compatible_devices': compatible_devices,
-            'compatibility_percentage': (compatible_devices / self.total_devices) * 100,
+            'compatible_devices': total_enterprise_win11_path,  # Enterprise devices on Win11 path
+            'compatibility_percentage': enterprise_win11_adoption_pct,
             'enterprise_percentage': (enterprise_count / self.total_devices) * 100
         }
     

@@ -30,8 +30,18 @@ kiosk_detection:
   - Kiosk
   - kiosk
 windows11_compatibility:
-  exclude_esol_categories:
-  - esol_2024
-  - esol_2025
+  # These categories ARE the Windows 11 migration pathway (via replacement)
+  migration_categories:
+  - esol_2024  # Replace with Win11 devices
+  - esol_2025  # Replace with Win11 devices
+  
+  # Only Enterprise EUCs are targeted for OS upgrade
+  target_editions:
+  - Enterprise
+  
+  # LTSC devices are excluded from Win11 push
+  exclude_editions:
+  - LTSC
+  
   win11_patterns:
   - Win11
