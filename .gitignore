@@ -58,12 +58,16 @@ venv.bak/
 *.dat
 *.log
 
-# Ignore raw data but not processed exports
-/data/raw/
-!/data/processed/
+# Ignore raw data contents but keep folder structure
+/data/raw/*
+!/data/raw/.gitkeep
 
-# Ignore reports
-/data/reports/
+# Ignore reports contents but keep folder structure  
+/data/reports/*
+!/data/reports/.gitkeep
+
+# Keep processed data folder and its contents
+!/data/processed/
 
 # Ignore OS files
 .DS_Store
