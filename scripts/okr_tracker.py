@@ -112,7 +112,7 @@ class ESOLDataAnalyzer:
         
         # Count Enterprise devices that will get Windows 11 via ESOL replacement
         esol_data = self.analyze_esol_categories()
-        enterprise_esol_mask = enterprise_df['action_to_take'].isin(['Urgent Replacement', 'Replace by 14/10/2025'])
+        enterprise_esol_mask = enterprise_df['action'].isin(['Urgent Replacement', 'Replace by 14/10/2025'])
         enterprise_esol_count = enterprise_esol_mask.sum()
         
         # Calculate Enterprise Windows 11 adoption path

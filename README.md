@@ -193,6 +193,16 @@ python scripts/kiosk_count.py --output "kiosk_analysis.md"
 - **LTSC exclusion** - LTSC devices excluded from Windows 11 push strategy
 - **Auto-saves reports** to data/reports/ directory
 
+### 7. EUC Summary Validation
+**`euc_summary.py`** - Cross-tool validation script for EUC device inventory metrics
+
+#### Features:
+- **Standardized metrics extraction** - Core EUC metrics for validation
+- **Cross-tool compatibility** - Consistent output format for comparison
+- **Multiple output formats** - Text and JSON formats supported
+- **Data integrity validation** - Hash fingerprinting and key metric sums
+- **Enterprise-focused Windows 11 calculations** - Aligned with 2025 strategy
+
 #### Usage Examples:
 ```sh
 # Basic Windows 11 analysis - auto-saves to data/reports/
@@ -202,7 +212,22 @@ python scripts/win11_count.py
 python scripts/win11_count.py --output "win11_analysis.md"
 ```
 
-### 7. ESOL Data Analysis
+#### Usage Examples:
+```sh
+# Basic EUC summary validation
+python scripts/euc_summary.py data/raw/EUC_ESOL.xlsx
+
+# Save output to file
+python scripts/euc_summary.py data/raw/EUC_ESOL.xlsx --output summary.txt
+
+# JSON format for automation
+python scripts/euc_summary.py data/raw/EUC_ESOL.xlsx --format json --output metrics.json
+
+# Quiet mode for automation
+python scripts/euc_summary.py data/raw/EUC_ESOL.xlsx --quiet
+```
+
+### 8. ESOL Data Analysis
 **`esol-data-analysis-python.py`** - Comprehensive ESOL analysis with cost projections
 
 #### Usage Examples:
@@ -232,6 +257,7 @@ python scripts/esol-data-analysis-python.py --output "cost_analysis.md"
 - `Kiosk_Count_{timestamp}.md` - from `kiosk_count.py`
 - `Win11_Count_{timestamp}.md` - from `win11_count.py`
 - `Executive_Summary_{timestamp}.md` - from `separated_esol_analyzer.py`
+- `EUC_Summary_{timestamp}.txt` - from `euc_summary.py` (when using --output)
 - `Quick_Status_{timestamp}.md` - from `separated_esol_analyzer.py`
 - `ESOL_Analysis_{timestamp}.md` - from `esol-data-analysis-python.py`
 - `OKR_Metrics_{timestamp}.json` - from `separated_esol_analyzer.py`
@@ -337,6 +363,22 @@ Windows 11 EUC analysis and counting:
 
 # Custom output location
 .\run_win11_analysis.bat custom_win11_report.md
+```
+
+### `run_euc_summary.bat` (NEW)
+EUC summary validation:
+```cmd
+# Show help
+.\run_euc_summary.bat help
+
+# Basic EUC summary validation
+.\run_euc_summary.bat
+
+# Save output to file
+.\run_euc_summary.bat --output summary.txt
+
+# JSON format for automation
+.\run_euc_summary.bat --format json --output metrics.json
 ```
 
 ## Current Data Summary
