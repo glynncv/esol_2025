@@ -17,6 +17,7 @@ import sys
 from datetime import datetime, date, timedelta
 from pathlib import Path
 from typing import Dict, Any, Optional, List, Tuple
+from data_utils import get_data_file_path, add_data_file_argument, validate_data_file
 
 
 class ESOLDataAnalyzer:
@@ -576,7 +577,7 @@ class OKRReportGenerator:
 def main():
     """Main function with command line interface"""
     parser = argparse.ArgumentParser(description='Generate Technical Debt Remediation OKR Tracker')
-    parser.add_argument('filepath', help='Path to EUC_ESOL.xlsx file')
+    add_data_file_argument(parser, 'Path to EUC_ESOL.xlsx file')
     parser.add_argument('--output', '-o', 
                        help='Output markdown file (auto-saves to data/reports/ if not specified)')
     parser.add_argument('--previous-data', '-p', 
@@ -597,8 +598,10 @@ def main():
                 print(f"📊 Loaded previous metrics from {args.previous_data}")
         
         # Analyze current data
-        print(f"📂 Loading data from {args.filepath}")
-        analyzer = ESOLDataAnalyzer(args.filepath)
+        data_file = get_data_file_path(args.data_file)
+        validate_data_file(data_file)
+        print(f"📂 Loading data from {data_file}")
+        analyzer = ESOLDataAnalyzer(data_file)
         try:
             analyzer.load_data()
         except RuntimeError as e:

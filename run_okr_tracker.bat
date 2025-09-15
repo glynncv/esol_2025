@@ -15,12 +15,12 @@ if "%1"=="" goto default
 :default
 echo Running basic OKR tracker...
 echo Auto-saves to data/reports/ with timestamped filename
-python scripts\okr_tracker.py data\raw\EUC_ESOL.xlsx
+python scripts\okr_tracker.py
 goto end
 
 :monthly
 echo Running monthly OKR report...
-python scripts\okr_tracker.py data\raw\EUC_ESOL.xlsx --output "Monthly_OKR_Report_%date:~-4,4%%date:~-10,2%%date:~-7,2%.md"
+python scripts\okr_tracker.py --output "Monthly_OKR_Report_%date:~-4,4%%date:~-10,2%%date:~-7,2%.md"
 goto end
 
 :compare
@@ -30,12 +30,12 @@ if "%2"=="" (
     goto end
 )
 echo Running OKR tracker with comparison to %2...
-python scripts\okr_tracker.py data\raw\EUC_ESOL.xlsx --previous-data %2 --save-metrics "metrics_%date:~-4,4%%date:~-10,2%%date:~-7,2%.json"
+python scripts\okr_tracker.py --previous-data %2 --save-metrics "metrics_%date:~-4,4%%date:~-10,2%%date:~-7,2%.json"
 goto end
 
 :metrics
 echo Saving current metrics for future comparison...
-python scripts\okr_tracker.py data\raw\EUC_ESOL.xlsx --save-metrics "metrics_%date:~-4,4%%date:~-10,2%%date:~-7,2%.json"
+python scripts\okr_tracker.py --save-metrics "metrics_%date:~-4,4%%date:~-10,2%%date:~-7,2%.json"
 goto end
 
 :help

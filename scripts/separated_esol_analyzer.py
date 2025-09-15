@@ -33,6 +33,7 @@ from pathlib import Path
 from typing import Dict, Any, List, Optional, Union
 from datetime import datetime, date
 import argparse
+from data_utils import get_data_file_path, add_data_file_argument, validate_data_file
 
 # Fix UTF-8 encoding for Windows console to handle emoji characters
 if sys.platform == "win32":
@@ -878,8 +879,7 @@ class OKRAnalysisOrchestrator:
 def main():
     """Main function with command line interface"""
     parser = argparse.ArgumentParser(description='Analyze ESOL device data for OKR tracking')
-    parser.add_argument('filepath', nargs='?', default='data/raw/EUC_ESOL.xlsx',
-                       help='Path to the Excel file containing device data (default: data/raw/EUC_ESOL.xlsx)')
+    add_data_file_argument(parser, 'Path to the Excel file containing device data')
     parser.add_argument('--config-path', default='config/', help='Path to configuration directory')
     parser.add_argument('--output', '-o', help='Output file for the report (optional - auto-saves to data/reports/ if not specified)')
     parser.add_argument('--format', choices=['full', 'executive', 'site', 'json', 'quick'], 
@@ -894,15 +894,18 @@ def main():
         orchestrator = OKRAnalysisOrchestrator(args.config_path)
         
         # Generate report based on format
+        data_file = get_data_file_path(args.data_file)
+        validate_data_file(data_file)
+        
         if args.format == 'full':
-            report = orchestrator.generate_full_report(args.filepath)
+            report = orchestrator.generate_full_report(data_file)
         elif args.format == 'executive':
-            report = orchestrator.generate_executive_summary(args.filepath)
+            report = orchestrator.generate_executive_summary(data_file)
         elif args.format == 'site':
-            report = orchestrator.generate_site_analysis(args.filepath, args.top_sites)
+            report = orchestrator.generate_site_analysis(data_file, args.top_sites)
         elif args.format == 'quick':
             # Quick status check
-            metrics = orchestrator.get_metrics_json(args.filepath)
+            metrics = orchestrator.get_metrics_json(data_file)
             report = f"""🎯 OKR QUICK STATUS CHECK
 {'='*50}
 Overall Score: {metrics['overall_score']:.1f}%
@@ -923,7 +926,7 @@ Total Investment: {metrics['total_devices'] - metrics['compatible_device_count']
 """
         elif args.format == 'json':
             import json
-            metrics = orchestrator.get_metrics_json(args.filepath)
+            metrics = orchestrator.get_metrics_json(data_file)
             report = json.dumps(metrics, indent=2)
         
         # Output report

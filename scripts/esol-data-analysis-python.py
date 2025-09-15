@@ -16,6 +16,7 @@ from pathlib import Path
 from typing import Dict, Tuple, List
 import argparse
 from datetime import datetime
+from data_utils import get_data_file_path, add_data_file_argument, validate_data_file
 
 class ESOLAnalyzer:
     """Analyzes ESOL (End of Service Life) device data for OKR tracking"""
@@ -299,14 +300,16 @@ File: {self.filepath.name}
 def main():
     """Main function with command line interface"""
     parser = argparse.ArgumentParser(description='Analyze ESOL device data for OKR tracking')
-    parser.add_argument('filepath', nargs='?', default='data/raw/EUC_ESOL.xlsx', help='Path to the Excel file containing device data (default: data/raw/EUC_ESOL.xlsx)')
+    add_data_file_argument(parser, 'Path to the Excel file containing device data')
     parser.add_argument('--output', '-o', help='Output file for the report (optional - auto-saves to data/reports/ if not specified)')
     parser.add_argument('--json', action='store_true', help='Output metrics as JSON')
     
     args = parser.parse_args()
     
     # Initialize analyzer
-    analyzer = ESOLAnalyzer(args.filepath)
+    data_file = get_data_file_path(args.data_file)
+    validate_data_file(data_file)
+    analyzer = ESOLAnalyzer(data_file)
     
     try:
         # Load and analyze data

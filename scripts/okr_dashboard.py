@@ -13,6 +13,7 @@ from datetime import datetime
 sys.path.append(str(Path(__file__).parent))
 
 from separated_esol_analyzer import OKRAnalysisOrchestrator
+from data_utils import get_data_file_path
 
 def print_menu():
     """Display the main menu"""
@@ -32,7 +33,8 @@ def quick_status():
     """Run quick status check"""
     try:
         orchestrator = OKRAnalysisOrchestrator()
-        metrics = orchestrator.get_metrics_json('data/raw/EUC_ESOL.xlsx')
+        data_file = get_data_file_path()
+        metrics = orchestrator.get_metrics_json(data_file)
         
         print(f"""
 🎯 OKR QUICK STATUS CHECK
@@ -60,7 +62,8 @@ def executive_summary():
     """Display executive summary"""
     try:
         orchestrator = OKRAnalysisOrchestrator()
-        summary = orchestrator.generate_executive_summary('data/raw/EUC_ESOL.xlsx')
+        data_file = get_data_file_path()
+        summary = orchestrator.generate_executive_summary(data_file)
         print(summary)
     except Exception as e:
         print(f"❌ Error: {e}")
@@ -69,7 +72,8 @@ def full_tracker():
     """Display full OKR tracker"""
     try:
         orchestrator = OKRAnalysisOrchestrator()
-        tracker = orchestrator.generate_full_report('data/raw/EUC_ESOL.xlsx')
+        data_file = get_data_file_path()
+        tracker = orchestrator.generate_full_report(data_file)
         print(tracker)
     except Exception as e:
         print(f"❌ Error: {e}")
@@ -78,7 +82,8 @@ def site_analysis():
     """Display site analysis"""
     try:
         orchestrator = OKRAnalysisOrchestrator()
-        analysis = orchestrator.generate_site_analysis('data/raw/EUC_ESOL.xlsx', 10)
+        data_file = get_data_file_path()
+        analysis = orchestrator.generate_site_analysis(data_file, 10)
         print(analysis)
     except Exception as e:
         print(f"❌ Error: {e}")
@@ -87,7 +92,8 @@ def save_executive_report():
     """Save executive report to file"""
     try:
         orchestrator = OKRAnalysisOrchestrator()
-        summary = orchestrator.generate_executive_summary('data/raw/EUC_ESOL.xlsx')
+        data_file = get_data_file_path()
+        summary = orchestrator.generate_executive_summary(data_file)
         
         # Create reports directory if it doesn't exist
         reports_dir = Path('data/reports')

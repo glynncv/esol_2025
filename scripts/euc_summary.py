@@ -5,6 +5,7 @@ import pandas as pd
 import argparse
 import hashlib
 import json
+import sys
 from datetime import datetime
 from pathlib import Path
 from data_utils import get_data_file_path, add_data_file_argument, validate_data_file
@@ -28,8 +29,8 @@ def main():
         if not all(col in df.columns for col in required_cols):
             raise ValueError("Missing required columns")
     except Exception as e:
-        print(f"Error loading data: {e}")
-        return 1
+        print(f"❌ Error loading data: {e}")
+        sys.exit(1)
     
     # Extract metrics
     total_devices = len(df)
