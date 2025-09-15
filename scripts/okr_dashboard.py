@@ -146,9 +146,10 @@ This dashboard provides easy access to ESOL OKR analysis tools:
 - Site Analysis helps prioritize remediation efforts
 
 🔧 Technical Notes:
-- Data source: data/raw/EUC_ESOL.xlsx
+- Data source: Auto-detected from data/raw/ or EUC_DATA_FILE environment variable
 - Configuration: config/ directory (YAML files)
 - Reports saved to: data/reports/
+- Shared utilities: scripts/data_utils.py for consistent file handling
 """)
 
 def main():

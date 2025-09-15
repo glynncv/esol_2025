@@ -2,19 +2,23 @@ import pandas as pd
 import argparse
 from pathlib import Path
 from datetime import datetime
+from data_utils import get_data_file_path, add_data_file_argument, validate_data_file
 
 def main():
     """Analyze ESOL device counts by category and optionally export site summary table."""
     parser = argparse.ArgumentParser(description='Analyze ESOL device counts by category')
-    parser.add_argument('--category', choices=['esol_2024', 'esol_2025', 'esol_2026', 'all'], 
-                       default='all', help='ESOL category to analyze (default: all)')
+    add_data_file_argument(parser, 'Path to EUC_ESOL.xlsx file')
+    parser.add_argument('--category', choices=['esol_2024', 'esol_2025', 'esol_2026', 'all'],
+                         default='all', help='ESOL category to analyze (default: all)')
     parser.add_argument('--output', '-o', help='Output file for the report (optional - auto-saves to data/reports/ if not specified)')
     parser.add_argument('--site-table', action='store_true', help='Export ESOL devices and cost by site')
-    
+
     args = parser.parse_args()
     
     # Read the Excel file
-    df = pd.read_excel('data/raw/EUC_ESOL.xlsx')
+    data_file = get_data_file_path(args.data_file)
+    validate_data_file(data_file)
+    df = pd.read_excel(data_file)
     
     if args.site_table:
         # Generate site summary table

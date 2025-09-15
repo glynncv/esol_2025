@@ -8,10 +8,12 @@ import sys
 sys.path.append(str(Path(__file__).parent))
 
 from separated_esol_analyzer import ConfigManager
+from data_utils import get_data_file_path, add_data_file_argument, validate_data_file
 
 def main():
     """Analyze Kiosk EUC counts by category and export summary report."""
     parser = argparse.ArgumentParser(description='Analyze Kiosk EUC counts by category')
+    add_data_file_argument(parser, 'Path to EUC_ESOL.xlsx file')
     parser.add_argument('--output', '-o', help='Output file for the report (optional - auto-saves to data/reports/ if not specified)')
     
     args = parser.parse_args()
@@ -23,7 +25,9 @@ def main():
     data_mapping = esol_config['data_mapping']
     
     # Read the Excel file
-    df = pd.read_excel('data/raw/EUC_ESOL.xlsx')
+    data_file = get_data_file_path(args.data_file)
+    validate_data_file(data_file)
+    df = pd.read_excel(data_file)
     
     # Filter for Kiosk EUCs based on YAML configuration
     device_name_col = data_mapping['device_name_column']

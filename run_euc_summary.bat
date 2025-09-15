@@ -13,10 +13,10 @@ if "%~1"=="help" (
 
 if "%~1"=="" (
     echo Running EUC summary validation...
-    python scripts/euc_summary.py data/raw/EUC_ESOL.xlsx
+    python scripts/euc_summary.py
 ) else (
     echo Running EUC summary validation...
-    python scripts/euc_summary.py data/raw/EUC_ESOL.xlsx %*
+    python scripts/euc_summary.py %*
 )
 
 :end

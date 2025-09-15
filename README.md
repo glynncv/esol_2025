@@ -97,17 +97,20 @@ python scripts/okr_dashboard.py
 
 #### Usage Examples:
 ```sh
-# Basic OKR report - auto-saves to data/reports/
+# Basic OKR report - auto-saves to data/reports/ (auto-detects data file)
+python scripts/okr_tracker.py
+
+# With explicit data file path
 python scripts/okr_tracker.py data/raw/EUC_ESOL.xlsx
 
 # Custom output location
-python scripts/okr_tracker.py data/raw/EUC_ESOL.xlsx --output monthly_okr_report.md
+python scripts/okr_tracker.py --output monthly_okr_report.md
 
 # With previous data comparison
-python scripts/okr_tracker.py data/raw/EUC_ESOL.xlsx --previous-data july_metrics.json --save-metrics august_metrics.json
+python scripts/okr_tracker.py --previous-data july_metrics.json --save-metrics august_metrics.json
 
 # Save current metrics for future comparison
-python scripts/okr_tracker.py data/raw/EUC_ESOL.xlsx --save-metrics current_metrics.json
+python scripts/okr_tracker.py --save-metrics current_metrics.json
 ```
 
 ### 3. Simple ESOL Counter
@@ -202,6 +205,7 @@ python scripts/kiosk_count.py --output "kiosk_analysis.md"
 - **Multiple output formats** - Text and JSON formats supported
 - **Data integrity validation** - Hash fingerprinting and key metric sums
 - **Enterprise-focused Windows 11 calculations** - Aligned with 2025 strategy
+- **Smart file detection** - Auto-detects data files with override capability
 
 #### Usage Examples:
 ```sh
@@ -214,17 +218,20 @@ python scripts/win11_count.py --output "win11_analysis.md"
 
 #### Usage Examples:
 ```sh
-# Basic EUC summary validation
+# Basic EUC summary validation (auto-detects data file)
+python scripts/euc_summary.py
+
+# With explicit data file path
 python scripts/euc_summary.py data/raw/EUC_ESOL.xlsx
 
 # Save output to file
-python scripts/euc_summary.py data/raw/EUC_ESOL.xlsx --output summary.txt
+python scripts/euc_summary.py --output summary.txt
 
 # JSON format for automation
-python scripts/euc_summary.py data/raw/EUC_ESOL.xlsx --format json --output metrics.json
+python scripts/euc_summary.py --format json --output metrics.json
 
 # Quiet mode for automation
-python scripts/euc_summary.py data/raw/EUC_ESOL.xlsx --quiet
+python scripts/euc_summary.py --quiet
 ```
 
 ### 8. ESOL Data Analysis
@@ -261,6 +268,33 @@ python scripts/esol-data-analysis-python.py --output "cost_analysis.md"
 - `Quick_Status_{timestamp}.md` - from `separated_esol_analyzer.py`
 - `ESOL_Analysis_{timestamp}.md` - from `esol-data-analysis-python.py`
 - `OKR_Metrics_{timestamp}.json` - from `separated_esol_analyzer.py`
+
+## 📁 Data File Management
+
+### Smart File Detection
+All analysis scripts now use intelligent file detection with the following priority:
+
+1. **Explicit path**: `python script.py /path/to/data.xlsx`
+2. **Environment variable**: `EUC_DATA_FILE=/path/to/data.xlsx`
+3. **Default location**: `data/raw/EUC_ESOL.xlsx`
+4. **CSV fallback**: `data/raw/EUC_ESOL.csv`
+
+### Environment Variable Usage
+```bash
+# Set custom data file location
+export EUC_DATA_FILE=/custom/path/EUC_data.xlsx
+
+# All scripts will use this file automatically
+python scripts/euc_summary.py
+python scripts/win11_count.py
+python scripts/kiosk_count.py
+```
+
+### Shared Data Utilities
+**`scripts/data_utils.py`** - Common file handling functions:
+- `get_data_file_path()` - Smart file resolution with fallbacks
+- `add_data_file_argument()` - Standardized command-line arguments
+- `validate_data_file()` - File validation and error handling
 
 ## 🎯 OKR Tracking Features
 
@@ -371,8 +405,11 @@ EUC summary validation:
 # Show help
 .\run_euc_summary.bat help
 
-# Basic EUC summary validation
+# Basic EUC summary validation (auto-detects data file)
 .\run_euc_summary.bat
+
+# With explicit data file
+.\run_euc_summary.bat data/raw/EUC_ESOL.xlsx
 
 # Save output to file
 .\run_euc_summary.bat --output summary.txt

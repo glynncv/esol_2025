@@ -7,11 +7,12 @@ import hashlib
 import json
 from datetime import datetime
 from pathlib import Path
+from data_utils import get_data_file_path, add_data_file_argument, validate_data_file
 
 def main():
     """Extract core EUC metrics and generate standardized summary report."""
     parser = argparse.ArgumentParser(description='EUC device inventory summary for validation')
-    parser.add_argument('csv_file', help='Path to EUC_ESOL CSV/Excel file')
+    add_data_file_argument(parser, 'Path to EUC_ESOL CSV/Excel file')
     parser.add_argument('--output', '-o', help='Output file (optional)')
     parser.add_argument('--format', choices=['text', 'json'], default='text', help='Output format')
     parser.add_argument('--quiet', action='store_true', help='Quiet mode for automation')
@@ -19,7 +20,10 @@ def main():
     
     # Load data
     try:
-        df = pd.read_excel(args.csv_file) if args.csv_file.endswith('.xlsx') else pd.read_csv(args.csv_file)
+        data_file = get_data_file_path(args.data_file)
+        validate_data_file(data_file)
+        
+        df = pd.read_excel(data_file) if data_file.endswith('.xlsx') else pd.read_csv(data_file)
         required_cols = ['Action to take', 'OS Build', 'Enterprise or LTSC', 'Device Name', 'Last User LoggedOn']
         if not all(col in df.columns for col in required_cols):
             raise ValueError("Missing required columns")
@@ -63,7 +67,7 @@ def main():
     else:
         output_str = f"""=== EUC DEVICE INVENTORY SUMMARY ===
 Analysis Timestamp: {timestamp}
-Data Source: {Path(args.csv_file).name}
+Data Source: {Path(data_file).name}
 
 DEVICE INVENTORY OVERVIEW:
 Total Devices: {total_devices:,}
@@ -97,7 +101,8 @@ Business Rule Version: YAML-2025-v1.0
     if args.output:
         Path(args.output).write_text(output_str, encoding='utf-8')
         if not args.quiet: print(f"Summary saved to {args.output}")
-    elif not args.quiet: print(output_str)
+    
+    if not args.quiet: print(output_str)
     return 0
 
 if __name__ == "__main__":
