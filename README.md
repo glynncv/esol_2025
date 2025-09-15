@@ -206,6 +206,7 @@ python scripts/kiosk_count.py --output "kiosk_analysis.md"
 - **Data integrity validation** - Hash fingerprinting and key metric sums
 - **Enterprise-focused Windows 11 calculations** - Aligned with 2025 strategy
 - **Smart file detection** - Auto-detects data files with override capability
+- **Auto-saves reports** to data/reports/ directory with timestamped filenames
 
 #### Usage Examples:
 ```sh
@@ -218,13 +219,13 @@ python scripts/win11_count.py --output "win11_analysis.md"
 
 #### Usage Examples:
 ```sh
-# Basic EUC summary validation (auto-detects data file)
+# Basic EUC summary validation - auto-saves to data/reports/
 python scripts/euc_summary.py
 
 # With explicit data file path
 python scripts/euc_summary.py data/raw/EUC_ESOL.xlsx
 
-# Save output to file
+# Custom output location (optional)
 python scripts/euc_summary.py --output summary.txt
 
 # JSON format for automation
@@ -264,7 +265,8 @@ python scripts/esol-data-analysis-python.py --output "cost_analysis.md"
 - `Kiosk_Count_{timestamp}.md` - from `kiosk_count.py`
 - `Win11_Count_{timestamp}.md` - from `win11_count.py`
 - `Executive_Summary_{timestamp}.md` - from `separated_esol_analyzer.py`
-- `EUC_Summary_{timestamp}.txt` - from `euc_summary.py` (when using --output)
+- `EUC_Summary_{timestamp}.txt` - from `euc_summary.py` (text format)
+- `EUC_Summary_{timestamp}.json` - from `euc_summary.py` (JSON format)
 - `Quick_Status_{timestamp}.md` - from `separated_esol_analyzer.py`
 - `ESOL_Analysis_{timestamp}.md` - from `esol-data-analysis-python.py`
 - `OKR_Metrics_{timestamp}.json` - from `separated_esol_analyzer.py`
@@ -405,13 +407,13 @@ EUC summary validation:
 # Show help
 .\run_euc_summary.bat help
 
-# Basic EUC summary validation (auto-detects data file)
+# Basic EUC summary validation (auto-saves to data/reports/)
 .\run_euc_summary.bat
 
 # With explicit data file
 .\run_euc_summary.bat data/raw/EUC_ESOL.xlsx
 
-# Save output to file
+# Custom output location (optional)
 .\run_euc_summary.bat --output summary.txt
 
 # JSON format for automation

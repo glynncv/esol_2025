@@ -98,9 +98,18 @@ Key Metric Sum: {total_devices + enterprise_count + total_esol + enterprise_win1
 Business Rule Version: YAML-2025-v1.0
 ==================================="""
     
+    # Save report
     if args.output:
         Path(args.output).write_text(output_str, encoding='utf-8')
         if not args.quiet: print(f"Summary saved to {args.output}")
+    else:
+        # Auto-save to data/reports/ with timestamped filename
+        output_dir = Path('data/reports')
+        output_dir.mkdir(parents=True, exist_ok=True)
+        extension = '.json' if args.format == 'json' else '.txt'
+        filename = output_dir / f'EUC_Summary_{datetime.now().strftime("%Y%m%d_%H%M%S")}{extension}'
+        filename.write_text(output_str, encoding='utf-8')
+        if not args.quiet: print(f"📄 Report auto-saved to {filename}")
     
     if not args.quiet: print(output_str)
     return 0
