@@ -60,8 +60,8 @@ class ESOLDataAnalyzer:
                 if original in self.data.columns:
                     self.data = self.data.rename(columns={original: standard})
             
-            print(f"✅ Successfully loaded {self.total_devices:,} devices")
-            print(f"📊 Columns available: {list(self.data.columns)}")
+            print(f"Successfully loaded {self.total_devices:,} devices")
+            print(f"Columns available: {list(self.data.columns)}")
             
             return self.data
             
@@ -330,7 +330,7 @@ class OKRReportGenerator:
         
         # Status mappings
         self.status_text_map = {0: 'AT RISK', 1: 'CAUTION', 2: 'ON TRACK'}
-        self.status_emoji_map = {0: '🔴', 1: '🟡', 2: '🟢'}
+        self.status_emoji_map = {0: 'AT RISK', 1: 'CAUTION', 2: 'ON TRACK'}
     
     def generate_progress_bar(self, percentage: float) -> str:
         """Generate visual progress bar"""
@@ -361,14 +361,14 @@ class OKRReportGenerator:
         status_emoji = self.status_emoji_map[status_level]
         progress_bar = self.generate_progress_bar(progress_score)
         
-        return f"""### Key Result 1: Remediate 100% of 2024 ESOL equipment by June 30, 2025 (📌)
+        return f"""### Key Result 1: Remediate 100% of 2024 ESOL equipment by June 30, 2025
 
 | Metric | Target | Current | Gap | Deadline | Status |
 |--------|--------|---------|-----|----------|--------|
 | 2024 ESOL Percentage | 0% (0 devices) | {current_pct:.2f}% ({device_count} devices) | {device_count} devices | June 30, 2025 | {status_emoji} {status_text} |
 
 **Current ESOL 2024 Percentage:**
-- 🔴🔴🔴🔴🔴🔴🔴🔴🔴🔴 {current_pct:.2f}% (Target: 0%)
+- AT RISK: {current_pct:.2f}% (Target: 0%)
 
 **Remediation Progress:**
 - {progress_bar} {progress_score:.0f}% Complete
@@ -393,7 +393,7 @@ class OKRReportGenerator:
         status_emoji = self.status_emoji_map[status_level]
         progress_bar = self.generate_progress_bar(progress_score)
         
-        return f"""### Key Result 2: Complete 50% of 2025 ESOL remediation by June 30 and 100% by December 31, 2025 (📌)
+        return f"""### Key Result 2: Complete 50% of 2025 ESOL remediation by June 30 and 100% by December 31, 2025
 
 | Milestone | Target | Current | Gap | Deadline | Status |
 |-----------|--------|---------|-----|----------|--------|
@@ -401,7 +401,7 @@ class OKRReportGenerator:
 | 100% Completion | 0% (0 devices) | {current_pct:.2f}% ({device_count} devices) | {device_count} devices | December 31, 2025 | {status_emoji} {status_text} |
 
 **Current ESOL 2025 Percentage:**
-- 🔴🔴🔴🔴🔴🔴🔴🔴🔴⬜ {current_pct:.2f}% (Target: 0% by Dec 31)
+- AT RISK: {current_pct:.2f}% (Target: 0% by Dec 31)
 
 **Total Progress:**
 - {progress_bar} {progress_score:.0f}% Complete
@@ -424,7 +424,7 @@ class OKRReportGenerator:
         status_text = self.status_text_map[status_level]
         status_emoji = self.status_emoji_map[status_level]
         
-        return f"""### Key Result 3: Upgrade or replace 90% of Windows 11-incompatible devices by October 31, 2025 (📌)
+        return f"""### Key Result 3: Upgrade or replace 90% of Windows 11-incompatible devices by October 31, 2025
 
 | Category | Total | Compatible | Target | Current | Status |
 |----------|-------|------------|--------|---------|--------|
@@ -454,7 +454,7 @@ class OKRReportGenerator:
         status_emoji = self.status_emoji_map[status_level]
         progress_bar = self.generate_progress_bar(progress_score)
         
-        return f"""### Key Result 4: Re-provision Enterprise kiosk devices to LTSC by June 30, 2025 (📌)
+        return f"""### Key Result 4: Re-provision Enterprise kiosk devices to LTSC by June 30, 2025
 
 | Requirement | Target | Current Status | Compliance | Status |
 |-------------|--------|----------------|------------|---------|
@@ -483,7 +483,7 @@ class OKRReportGenerator:
 |------------|--------|--------|---------|----------|----------------|--------|
 | KR1: 2024 ESOL → 0% | 25% | 0% ESOL | {self.metrics['esol_2024_percentage']:.2f}% ESOL | {self.metrics['kr1_progress_score']:.0f}% | {self.metrics['kr1_weighted_score']:.1f}% | {self.status_emoji_map[self.metrics['kr1_status_level']]} {self.status_text_map[self.metrics['kr1_status_level']]} |
 | KR2: 2025 ESOL → 0% | 25% | 0% ESOL | {self.metrics['esol_2025_percentage']:.2f}% ESOL | {self.metrics['kr2_progress_score']:.0f}% | {self.metrics['kr2_weighted_score']:.1f}% | {self.status_emoji_map[self.metrics['kr2_status_level']]} {self.status_text_map[self.metrics['kr2_status_level']]} |
-| KR3: Win11 Compatibility ≥90% | 40% | 90% | {self.metrics['compatibility_percentage']:.1f}% | {self.metrics['kr3_progress_score']:.0f}% | {self.metrics['kr3_weighted_score']:.1f}% | {self.status_emoji_map[self.metrics['kr3_status_level']]} {self.status_text_map[self.metrics['kr3_status_level']]} |
+| KR3: Win11 Compatibility >=90% | 40% | 90% | {self.metrics['compatibility_percentage']:.1f}% | {self.metrics['kr3_progress_score']:.0f}% | {self.metrics['kr3_weighted_score']:.1f}% | {self.status_emoji_map[self.metrics['kr3_status_level']]} {self.status_text_map[self.metrics['kr3_status_level']]} |
 | KR4: Kiosk Re-provisioning | 10% | 0 devices | {self.metrics['enterprise_kiosk_count']} devices | {self.metrics['kr4_progress_score']:.0f}% | {self.metrics['kr4_weighted_score']:.1f}% | {self.status_emoji_map[self.metrics['kr4_status_level']]} {self.status_text_map[self.metrics['kr4_status_level']]} |
 | **Overall OKR Completion** | **100%** | **All Targets** | **Mixed** | **{overall_score:.1f}%** | **{overall_score:.1f}%** | **{overall_status} {overall_text}** |
 
@@ -508,7 +508,7 @@ class OKRReportGenerator:
 
 """
         for i, (site, counts) in enumerate(top_sites, 1):
-            priority = "🔴 CRITICAL" if counts['esol_2024'] > 10 else "🟡 HIGH" if counts['total_esol'] > 20 else "🟢 MEDIUM"
+            priority = "CRITICAL" if counts['esol_2024'] > 10 else "HIGH" if counts['total_esol'] > 20 else "MEDIUM"
             section += f"{i}. **{site}**: {counts['total_esol']} total ({counts['esol_2024']} ESOL 2024, {counts['esol_2025']} ESOL 2025) - {priority}\n"
         
         return section + "\n---\n\n"
@@ -519,7 +519,7 @@ class OKRReportGenerator:
         
         summary = f"""## Executive Summary
 
-### 🎯 **Current OKR Status: {self.metrics['overall_score']:.1f}% Complete**
+### **Current OKR Status: {self.metrics['overall_score']:.1f}% Complete**
 
 """
         
@@ -588,32 +588,32 @@ def main():
     args = parser.parse_args()
     
     try:
-        print("🔄 Starting OKR Tracker generation...")
+        print("Starting OKR Tracker generation...")
         
         # Load previous metrics if provided
         previous_metrics = None
         if args.previous_data and Path(args.previous_data).exists():
             with open(args.previous_data, 'r') as f:
                 previous_metrics = json.load(f)
-                print(f"📊 Loaded previous metrics from {args.previous_data}")
+                print(f"Loaded previous metrics from {args.previous_data}")
         
         # Analyze current data
         data_file = get_data_file_path(args.data_file)
         validate_data_file(data_file)
-        print(f"📂 Loading data from {data_file}")
+        print(f"Loading data from {data_file}")
         analyzer = ESOLDataAnalyzer(data_file)
         try:
             analyzer.load_data()
         except RuntimeError as e:
-            print(f"❌ {e}")
+            print(f"Error: {e}")
             sys.exit(1)
         
-        print("🧮 Calculating OKR metrics...")
+        print("Calculating OKR metrics...")
         calculator = OKRCalculator(analyzer)
         metrics = calculator.calculate_kr_metrics()
         
         # Generate report
-        print("📝 Generating OKR tracker report...")
+        print("Generating OKR tracker report...")
         generator = OKRReportGenerator(metrics, previous_metrics)
         report = generator.generate_full_report()
         
@@ -625,7 +625,7 @@ def main():
             
             with open(output_path, 'w', encoding='utf-8') as f:
                 f.write(report)
-            print(f"✅ Report saved to {output_path}")
+            print(f"Report saved to {output_path}")
         else:
             # Auto-save to data/reports/ with timestamp
             timestamp = datetime.now().strftime('%Y%m%d_%H%M%S')
@@ -635,7 +635,7 @@ def main():
             
             with open(filename, 'w', encoding='utf-8') as f:
                 f.write(report)
-            print(f"📄 Report auto-saved to {filename}")
+            print(f"Report auto-saved to {filename}")
         
         # Save current metrics if requested
         if args.save_metrics:
@@ -646,7 +646,7 @@ def main():
             print(f"💾 Current metrics saved to {args.save_metrics}")
         
         # Print summary
-        print("\n📊 OKR SUMMARY:")
+        print("\nOKR SUMMARY:")
         print(f"Overall Completion: {metrics['overall_score']:.1f}%")
         print(f"ESOL 2024: {metrics['esol_2024_count']} devices ({metrics['esol_2024_percentage']:.2f}%)")
         print(f"ESOL 2025: {metrics['esol_2025_count']} devices ({metrics['esol_2025_percentage']:.2f}%)")
@@ -657,7 +657,7 @@ def main():
         print("\n⏹️  Generation interrupted by user")
         sys.exit(1)
     except Exception as e:
-        print(f"❌ Error: {e}")
+        print(f"Error: {e}")
         sys.exit(1)
 
 

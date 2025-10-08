@@ -28,8 +28,8 @@ def main():
         # Group by site and calculate counts and costs
         site_data = esol_df.groupby('Site Location').agg({
             'Action to take': lambda x: (x == 'Urgent Replacement').sum(),  # ESOL 2024
-            'Estimate Cost for Replacement $': 'sum'  # Total cost for all ESOL devices
-        }).rename(columns={'Action to take': 'ESOL_2024_Count', 'Estimate Cost for Replacement $': 'Total_Cost'})
+            'Cost for Replacement $': 'sum'  # Total cost for all ESOL devices
+        }).rename(columns={'Action to take': 'ESOL_2024_Count', 'Cost for Replacement $': 'Total_Cost'})
         
         site_data['ESOL_2025_Count'] = esol_df.groupby('Site Location')['Action to take'].apply(lambda x: (x == 'Replace by 14/10/2025').sum())
         site_data['ESOL_2026_Count'] = esol_df.groupby('Site Location')['Action to take'].apply(lambda x: (x == 'Replace by 11/11/2026').sum())
@@ -57,7 +57,7 @@ def main():
         print("=" * 70)
         for site, row in site_data.iterrows():
             print(f"{site}: {int(row['Total_ESOL'])} devices (2024: {int(row['ESOL_2024_Count'])}, 2025: {int(row['ESOL_2025_Count'])}, 2026: {int(row['ESOL_2026_Count'])}) - ${row['Total_Cost']:,.0f}")
-        print(f"\n📊 Site table exported to:")
+        print(f"\nSite table exported to:")
         print(f"   CSV: {csv_file}")
         print(f"   JSON: {json_file}")
         return
@@ -130,7 +130,7 @@ def main():
         
         with open(output_path, 'w', encoding='utf-8') as f:
             f.write(report_content)
-        print(f"📄 Report saved to {output_path}")
+        print(f"Report saved to {output_path}")
     else:
         # Auto-save to data/reports/ with timestamp
         timestamp = datetime.now().strftime('%Y%m%d_%H%M%S')
@@ -140,7 +140,7 @@ def main():
         
         with open(filename, 'w', encoding='utf-8') as f:
             f.write(report_content)
-        print(f"📄 Report auto-saved to {filename}")
+        print(f"Report auto-saved to {filename}")
 
 if __name__ == "__main__":
     main() 

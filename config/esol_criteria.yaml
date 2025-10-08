@@ -1,13 +1,13 @@
 data_mapping:
   action_column: Action to take
-  cost_column: Estimate Cost for Replacement $
+  cost_column: Cost for Replacement $
   device_name_column: Device Name
-  edition_column: Enterprise or LTSC
-  os_column: OS Build
+  edition_column: LTSC or Enterprise
+  os_column: Current OS Build
   site_column: Site Location
   user_columns:
-    current: Current User LoggedOn
-    last: Last User LoggedOn
+    current: Current User Logged On
+    last: Last User Logged On
 esol_categories:
   esol_2024:
     action_value: Urgent Replacement

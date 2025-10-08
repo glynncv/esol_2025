@@ -25,7 +25,7 @@ def main():
         validate_data_file(data_file)
         
         df = pd.read_excel(data_file) if data_file.endswith('.xlsx') else pd.read_csv(data_file)
-        required_cols = ['Action to take', 'OS Build', 'Enterprise or LTSC', 'Device Name', 'Last User LoggedOn']
+        required_cols = ['Action to take', 'Current OS Build', 'LTSC or Enterprise', 'Device Name', 'Last User Logged On']
         if not all(col in df.columns for col in required_cols):
             raise ValueError("Missing required columns")
     except Exception as e:
@@ -34,25 +34,25 @@ def main():
     
     # Extract metrics
     total_devices = len(df)
-    enterprise_count = len(df[df['Enterprise or LTSC'] == 'Enterprise'])
-    ltsc_count = len(df[df['Enterprise or LTSC'] == 'LTSC'])
+    enterprise_count = len(df[df['LTSC or Enterprise'] == 'Enterprise'])
+    ltsc_count = len(df[df['LTSC or Enterprise'] == 'LTSC'])
     esol_2024 = len(df[df['Action to take'] == 'Urgent Replacement'])
     esol_2025 = len(df[df['Action to take'] == 'Replace by 14/10/2025'])
     esol_2026 = len(df[df['Action to take'] == 'Replace by 11/11/2026'])
     total_esol = esol_2024 + esol_2025 + esol_2026
     
     # Windows 11 (Enterprise baseline)
-    enterprise_df = df[df['Enterprise or LTSC'] == 'Enterprise']
-    enterprise_win11 = len(enterprise_df[enterprise_df['OS Build'].str.contains('Win11', na=False)])
+    enterprise_df = df[df['LTSC or Enterprise'] == 'Enterprise']
+    enterprise_win11 = len(enterprise_df[enterprise_df['Current OS Build'].str.contains('Win11', na=False)])
     win11_adoption = round((enterprise_win11 / enterprise_count) * 100, 1) if enterprise_count > 0 else 0
     enterprise_esol = len(enterprise_df[enterprise_df['Action to take'].isin(['Urgent Replacement', 'Replace by 14/10/2025'])])
     win11_compatibility = round(((enterprise_win11 + enterprise_esol) / enterprise_count) * 100, 1) if enterprise_count > 0 else 0
     
     # Kiosk detection
-    kiosk_mask = df['Device Name'].str.contains('SHP', na=False) | df['Last User LoggedOn'].str.contains('kiosk', case=False, na=False)
+    kiosk_mask = df['Device Name'].str.contains('SHP', na=False) | df['Last User Logged On'].str.contains('kiosk', case=False, na=False)
     total_kiosks = len(df[kiosk_mask])
-    enterprise_kiosks = len(df[kiosk_mask & (df['Enterprise or LTSC'] == 'Enterprise')])
-    ltsc_kiosks = len(df[kiosk_mask & (df['Enterprise or LTSC'] == 'LTSC')])
+    enterprise_kiosks = len(df[kiosk_mask & (df['LTSC or Enterprise'] == 'Enterprise')])
+    ltsc_kiosks = len(df[kiosk_mask & (df['LTSC or Enterprise'] == 'LTSC')])
     
     # Generate output
     timestamp = datetime.now().strftime('%Y-%m-%d %H:%M:%S')
@@ -110,7 +110,7 @@ Business Rule Version: YAML-2025-v1.0
         extension = '.json' if args.format == 'json' else '.txt'
         filename = output_dir / f'EUC_Summary_{datetime.now().strftime("%Y%m%d_%H%M%S")}{extension}'
         filename.write_text(output_str, encoding='utf-8')
-        if not args.quiet: print(f"📄 Report auto-saved to {filename}")
+        if not args.quiet: print(f"Report auto-saved to {filename}")
     
     if not args.quiet: print(output_str)
     return 0

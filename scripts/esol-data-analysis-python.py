@@ -32,10 +32,10 @@ class ESOLAnalyzer:
         try:
             self.data = pd.read_excel(self.filepath, sheet_name='Export')
             self.total_devices = len(self.data)
-            print(f"✅ Successfully loaded {self.total_devices:,} devices from {self.filepath.name}")
+            print(f"Successfully loaded {self.total_devices:,} devices from {self.filepath.name}")
             return self.data
         except Exception as e:
-            print(f"❌ Error loading file: {e}")
+            print(f"Error loading file: {e}")
             sys.exit(1)
     
     def analyze_esol_categories(self) -> Dict[str, int]:
@@ -71,11 +71,11 @@ class ESOLAnalyzer:
             raise ValueError("Data not loaded")
         
         # Count Windows 11 devices
-        win11_devices = self.data[self.data['OS Build'].str.contains('Win11', na=False)].shape[0]
+        win11_devices = self.data[self.data['Current OS Build'].str.contains('Win11', na=False)].shape[0]
         
         # Count Enterprise vs LTSC
-        enterprise_count = self.data[self.data['Enterprise or LTSC'] == 'Enterprise'].shape[0]
-        ltsc_count = self.data[self.data['Enterprise or LTSC'] == 'LTSC'].shape[0]
+        enterprise_count = self.data[self.data['LTSC or Enterprise'] == 'Enterprise'].shape[0]
+        ltsc_count = self.data[self.data['LTSC or Enterprise'] == 'LTSC'].shape[0]
         
         # Calculate ESOL counts for compatibility
         esol_data = self.analyze_esol_categories()
@@ -103,16 +103,16 @@ class ESOLAnalyzer:
             raise ValueError("Data not loaded")
         
         # Check for kiosk indicators in user fields
-        current_user_kiosk = self.data['Current User LoggedOn'].str.contains('gid|kiosk', case=False, na=False)
-        last_user_kiosk = self.data['Last User LoggedOn'].str.contains('gid|kiosk', case=False, na=False)
+        current_user_kiosk = self.data['Current User Logged On'].str.contains('gid|kiosk', case=False, na=False)
+        last_user_kiosk = self.data['Last User Logged On'].str.contains('gid|kiosk', case=False, na=False)
         
         # Combine both conditions
         kiosk_mask = current_user_kiosk | last_user_kiosk
         kiosk_devices = self.data[kiosk_mask]
         
         # Count Enterprise kiosks that need re-provisioning
-        enterprise_kiosks = kiosk_devices[kiosk_devices['Enterprise or LTSC'] == 'Enterprise'].shape[0]
-        ltsc_kiosks = kiosk_devices[kiosk_devices['Enterprise or LTSC'] == 'LTSC'].shape[0]
+        enterprise_kiosks = kiosk_devices[kiosk_devices['LTSC or Enterprise'] == 'Enterprise'].shape[0]
+        ltsc_kiosks = kiosk_devices[kiosk_devices['LTSC or Enterprise'] == 'LTSC'].shape[0]
         
         results = {
             'total_kiosk_devices': len(kiosk_devices),
@@ -171,8 +171,8 @@ class ESOLAnalyzer:
         esol_2024_mask = self.data['Action to take'] == 'Urgent Replacement'
         esol_2025_mask = self.data['Action to take'] == 'Replace by 14/10/2025'
         
-        esol_2024_cost = self.data[esol_2024_mask]['Estimate Cost for Replacement $'].sum()
-        esol_2025_cost = self.data[esol_2025_mask]['Estimate Cost for Replacement $'].sum()
+        esol_2024_cost = self.data[esol_2024_mask]['Cost for Replacement $'].sum()
+        esol_2025_cost = self.data[esol_2025_mask]['Cost for Replacement $'].sum()
         total_cost = esol_2024_cost + esol_2025_cost
         
         results = {
@@ -189,7 +189,7 @@ class ESOLAnalyzer:
             self.load_data()
         if self.data is None:
             raise ValueError("Data not loaded")
-        os_distribution = self.data['OS Build'].value_counts().to_dict()
+        os_distribution = self.data['Current OS Build'].value_counts().to_dict()
         return os_distribution
     
     def calculate_okr_metrics(self) -> Dict[str, float]:
@@ -255,16 +255,16 @@ File: {self.filepath.name}
 
 ### KR1: ESOL 2024 Remediation (Target: 0% by June 30, 2025)
 - **Current**: {esol_data['esol_2024_count']} devices ({esol_data['esol_2024_percentage']:.2f}%)
-- **Status**: 🔴 AT RISK (0% progress)
+- **Status**: AT RISK (0% progress)
 
 ### KR2: ESOL 2025 Remediation (Target: 0% by Dec 31, 2025)
 - **Current**: {esol_data['esol_2025_count']} devices ({esol_data['esol_2025_percentage']:.2f}%)
 - **50% Milestone**: {okr_metrics['kr2_devices_for_50_percent']} devices need remediation by June 30
-- **Status**: 🟡 CAUTION (0% progress)
+- **Status**: CAUTION (0% progress)
 
-### KR3: Windows 11 Compatibility (Target: ≥90%)
+### KR3: Windows 11 Compatibility (Target: >=90%)
 - **Current**: {win11_data['compatibility_percentage']:.1f}%
-- **Status**: {"🟢 ON TRACK" if okr_metrics['kr3_target_met'] else "🟡 CAUTION"}
+- **Status**: {"ON TRACK" if okr_metrics['kr3_target_met'] else "CAUTION"}
 
 ### KR4: Kiosk Re-provisioning
 - **Enterprise Kiosks**: {kiosk_data['enterprise_kiosks']} devices need LTSC re-provisioning
@@ -327,7 +327,7 @@ def main():
                 output_path.parent.mkdir(parents=True, exist_ok=True)
                 with open(output_path, 'w', encoding='utf-8') as f:
                     f.write(json_output)
-                print(f"📄 JSON metrics saved to {args.output}")
+                print(f"JSON metrics saved to {args.output}")
             else:
                 # Auto-save JSON to data/reports/
                 timestamp = datetime.now().strftime('%Y%m%d_%H%M%S')
@@ -337,7 +337,7 @@ def main():
                 
                 with open(filename, 'w', encoding='utf-8') as f:
                     f.write(json_output)
-                print(f"📄 JSON metrics auto-saved to {filename}")
+                print(f"JSON metrics auto-saved to {filename}")
                 print(json_output)
         else:
             # Generate and display report
@@ -349,7 +349,7 @@ def main():
                 output_path.parent.mkdir(parents=True, exist_ok=True)
                 with open(output_path, 'w', encoding='utf-8') as f:
                     f.write(report)
-                print(f"📄 Report saved to {args.output}")
+                print(f"Report saved to {args.output}")
             else:
                 # Auto-save to data/reports/
                 timestamp = datetime.now().strftime('%Y%m%d_%H%M%S')
@@ -359,7 +359,7 @@ def main():
                 
                 with open(filename, 'w', encoding='utf-8') as f:
                     f.write(report)
-                print(f"📄 Report auto-saved to {filename}")
+                print(f"Report auto-saved to {filename}")
                 # Print to console
                 print(report)
                 
@@ -367,7 +367,7 @@ def main():
         print("\n⏹️  Analysis interrupted by user")
         sys.exit(1)
     except Exception as e:
-        print(f"❌ Unexpected error: {e}")
+        print(f"Unexpected error: {e}")
         sys.exit(1)
 
 # Example usage functions
