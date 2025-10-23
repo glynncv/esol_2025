@@ -30,18 +30,33 @@ kiosk_detection:
   - Kiosk
   - kiosk
 windows11_compatibility:
-  # These categories ARE the Windows 11 migration pathway (via replacement)
-  migration_categories:
-  - esol_2024  # Replace with Win11 devices
-  - esol_2025  # Replace with Win11 devices
+  # KPI Target: 100% of eligible EUCs upgraded by end of Oct 2025
+  kpi_target_date: '2025-10-31'
+  kpi_target_percentage: 100
   
-  # Only Enterprise EUCs are targeted for OS upgrade
+  # Windows 11 scope criteria:
+  # 1. Latest OS Supported contains "Win11"
+  # 2. Enterprise or LTSC = "Enterprise" 
+  # 3. Action to take is any EXCEPT ESOL 2024 or ESOL 2025
+  
+  # Only Enterprise EUCs are targeted for Windows 11 upgrade
   target_editions:
   - Enterprise
   
-  # LTSC devices are excluded from Win11 push
+  # LTSC devices are excluded from Windows 11 push
   exclude_editions:
   - LTSC
   
+  # ESOL categories that are EXCLUDED from Windows 11 upgrade (replaced instead)
+  excluded_actions:
+  - esol_2024  # Urgent Replacement - replaced with Win11 devices
+  - esol_2025  # Replace by 14/10/2025 - replaced with Win11 devices
+  
+  # Windows 11 OS detection patterns
   win11_patterns:
   - Win11
+  
+  # Migration categories for replacement pathway (not upgrade)
+  migration_categories:
+  - esol_2024  # Replace with Win11 devices
+  - esol_2025  # Replace with Win11 devices

@@ -23,10 +23,11 @@ def print_menu():
     print("1. 📊 Quick Status Check (Daily)")
     print("2. 📋 Executive Summary")  
     print("3. 📈 Full OKR Tracker")
-    print("4. 🏢 Site Analysis")
-    print("5. 💾 Save Executive Report")
-    print("6. ❓ Help")
-    print("7. 🚪 Exit")
+    print("4. 🏢 Site Analysis (ESOL)")
+    print("5. 🖥️ Windows 11 Site Analysis")
+    print("6. 💾 Save Executive Report")
+    print("7. ❓ Help")
+    print("8. 🚪 Exit")
     print("="*50)
 
 def quick_status():
@@ -79,12 +80,33 @@ def full_tracker():
         print(f"❌ Error: {e}")
 
 def site_analysis():
-    """Display site analysis"""
+    """Display ESOL site analysis"""
     try:
         orchestrator = OKRAnalysisOrchestrator()
         data_file = get_data_file_path()
         analysis = orchestrator.generate_site_analysis(data_file, 10)
         print(analysis)
+    except Exception as e:
+        print(f"❌ Error: {e}")
+
+def win11_site_analysis():
+    """Display Windows 11 site analysis"""
+    try:
+        import subprocess
+        import sys
+        
+        # Run the Windows 11 site analysis
+        result = subprocess.run([
+            sys.executable, 'scripts/win11_count.py', '--site-table'
+        ], capture_output=True, text=True, cwd=Path.cwd())
+        
+        if result.returncode == 0:
+            print("🖥️ Windows 11 Site Analysis")
+            print("=" * 50)
+            print(result.stdout)
+        else:
+            print(f"❌ Error running Windows 11 analysis: {result.stderr}")
+            
     except Exception as e:
         print(f"❌ Error: {e}")
 
@@ -135,12 +157,17 @@ This dashboard provides easy access to ESOL OKR analysis tools:
    - Complete progress tracking and risk assessment
    - Best for: Monthly reviews, deep analysis
 
-4. SITE ANALYSIS
+4. SITE ANALYSIS (ESOL)
    - Site-by-site breakdown of ESOL devices
    - Priority ranking by device count
    - Best for: Planning site visits, resource allocation
 
-5. SAVE EXECUTIVE REPORT
+5. WINDOWS 11 SITE ANALYSIS
+   - Site-by-site Windows 11 deployment status
+   - Shows eligible, upgraded, and pending devices
+   - Best for: Windows 11 upgrade planning and tracking
+
+6. SAVE EXECUTIVE REPORT
    - Saves executive summary to timestamped file
    - Files saved to data/reports/ directory
    - Best for: Record keeping, sharing reports
@@ -181,22 +208,26 @@ def main():
                 full_tracker()
                 
             elif choice == '4':
-                print("\n🏢 Running Site Analysis...")
+                print("\n🏢 Running ESOL Site Analysis...")
                 site_analysis()
                 
             elif choice == '5':
+                print("\n🖥️ Running Windows 11 Site Analysis...")
+                win11_site_analysis()
+                
+            elif choice == '6':
                 print("\n💾 Saving Executive Report...")
                 save_executive_report()
                 
-            elif choice == '6':
+            elif choice == '7':
                 show_help()
                 
-            elif choice == '7':
+            elif choice == '8':
                 print("\n👋 Goodbye!")
                 break
                 
             else:
-                print("❌ Invalid choice. Please enter a number from 1-7.")
+                print("❌ Invalid choice. Please enter a number from 1-8.")
                 
         except KeyboardInterrupt:
             print("\n\n👋 Goodbye!")
