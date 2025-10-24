@@ -52,6 +52,7 @@ class ConfigManager:
         self.config_path = Path(config_path)
         self.esol_config = self._load_yaml("esol_criteria.yaml")
         self.okr_config = self._load_yaml("okr_criteria.yaml")
+        self.win11_config = self._load_yaml("win11_criteria.yaml")
         self.validate_config()
     
     def _load_yaml(self, filename: str) -> Dict[str, Any]:
@@ -119,12 +120,6 @@ class ConfigManager:
                     'case_sensitive': False,
                     'logic': 'OR'
                 },
-                'windows11_compatibility': {
-                    'migration_categories': ['esol_2024', 'esol_2025'],
-                    'target_editions': ['Enterprise'],
-                    'exclude_editions': ['LTSC'],
-                    'win11_patterns': ['Win11']
-                }
             }
         
         elif filename == "okr_criteria.yaml":
@@ -160,6 +155,17 @@ class ConfigManager:
                 }
             }
         
+        elif filename == "win11_criteria.yaml":
+            default_config = {
+                'kpi_target_date': '2025-10-31',
+                'kpi_target_percentage': 100,
+                'target_editions': ['Enterprise'],
+                'exclude_editions': ['LTSC'],
+                'excluded_actions': ['esol_2024', 'esol_2025'],
+                'win11_patterns': ['Win11'],
+                'migration_categories': ['esol_2024', 'esol_2025']
+            }
+        
         with open(self.config_path / filename, 'w', encoding='utf-8') as f:
             yaml.dump(default_config, f, default_flow_style=False, indent=2)
         print(f"✅ Created default config: {self.config_path / filename}")
@@ -170,10 +176,14 @@ class ConfigManager:
     def get_okr_criteria(self) -> Dict[str, Any]:
         return self.okr_config
     
+    def get_win11_criteria(self) -> Dict[str, Any]:
+        return self.win11_config
+    
     def validate_config(self) -> bool:
         """Validate configuration completeness and consistency"""
-        required_esol_keys = ['esol_categories', 'data_mapping', 'kiosk_detection', 'windows11_compatibility']
+        required_esol_keys = ['esol_categories', 'data_mapping', 'kiosk_detection']
         required_okr_keys = ['okr_weights', 'status_levels', 'targets', 'milestone_dates']
+        required_win11_keys = ['kpi_target_date', 'kpi_target_percentage', 'target_editions', 'excluded_actions', 'win11_patterns']
         
         for key in required_esol_keys:
             if key not in self.esol_config:
@@ -182,6 +192,10 @@ class ConfigManager:
         for key in required_okr_keys:
             if key not in self.okr_config:
                 raise ValueError(f"Missing required OKR config key: {key}")
+        
+        for key in required_win11_keys:
+            if key not in self.win11_config:
+                raise ValueError(f"Missing required Windows 11 config key: {key}")
         
         # Validate weight percentages sum to 100
         weights = self.okr_config['okr_weights']
@@ -197,6 +211,7 @@ class DataAnalyzer:
     
     def __init__(self, config: ConfigManager):
         self.config = config.get_esol_criteria()
+        self.win11_config = config.get_win11_criteria()
         self.data_mapping = self.config['data_mapping']
         self.esol_categories = self.config['esol_categories']
     
@@ -290,7 +305,7 @@ class DataAnalyzer:
         ltsc_count = len(df[df[edition_col] == 'LTSC'])
         
         # Count Windows 11 devices (Enterprise focus for 2025 push)
-        win11_patterns = '|'.join(self.config['windows11_compatibility']['win11_patterns'])
+        win11_patterns = '|'.join(self.win11_config['win11_patterns'])
         
         # Filter for Enterprise devices only (the 2025 Windows 11 push target)
         enterprise_mask = df[edition_col] == 'Enterprise'
@@ -300,7 +315,7 @@ class DataAnalyzer:
         enterprise_win11_count = len(enterprise_df[enterprise_df[os_col].str.contains(win11_patterns, na=False)])
         
         # Count Enterprise devices that will get Windows 11 via ESOL replacement
-        migration_categories = self.config['windows11_compatibility']['migration_categories']
+        migration_categories = self.win11_config['migration_categories']
         migration_actions = [self.esol_categories[cat]['action_value'] for cat in migration_categories]
         enterprise_esol_mask = enterprise_df[action_col].isin(migration_actions)
         enterprise_esol_count = len(enterprise_df[enterprise_esol_mask])
@@ -403,6 +418,7 @@ class BusinessLogicCalculator:
     def __init__(self, config: ConfigManager):
         self.okr_config = config.get_okr_criteria()
         self.esol_config = config.get_esol_criteria()
+        self.win11_config = config.get_win11_criteria()
         self.weights = self.okr_config['okr_weights']
         self.targets = self.okr_config['targets']
         self.status_levels = self.okr_config['status_levels']
@@ -427,7 +443,7 @@ class BusinessLogicCalculator:
         total_devices = raw_counts['total_devices']
         
         # Calculate Enterprise Windows 11 adoption path
-        migration_categories = self.esol_config['windows11_compatibility']['migration_categories']
+        migration_categories = self.win11_config['migration_categories']
         enterprise_esol_count = sum(raw_counts[f"{cat}_count"] for cat in migration_categories)
         enterprise_win11_count = raw_counts['win11_count']
         

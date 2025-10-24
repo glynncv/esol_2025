@@ -1,0 +1,11 @@
+{
+  "analysis_date": "2025-10-24",
+  "target_date": "2025-10-31",
+  "days_remaining": 6,
+  "total_eligible_devices": 3655,
+  "completed_devices": 3557,
+  "remaining_devices": 98,
+  "completion_percentage": 97.3,
+  "daily_burn_rate_needed": 16.33,
+  "kpi_status": "AT RISK"
+}
