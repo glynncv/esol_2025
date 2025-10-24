@@ -3,7 +3,8 @@ data_mapping:
   cost_column: Cost for Replacement $
   device_name_column: Device Name
   edition_column: LTSC or Enterprise
-  os_column: Current OS Build
+  os_column: EOSL Latest OS Build Supported  # Used for Windows 11 eligibility (device capability)
+  current_os_column: Current OS Build         # Used for Windows 11 upgrade status (actual installation)
   site_column: Site Location
   user_columns:
     current: Current User Logged On
@@ -29,34 +30,3 @@ kiosk_detection:
   user_loggedon_patterns:
   - Kiosk
   - kiosk
-windows11_compatibility:
-  # KPI Target: 100% of eligible EUCs upgraded by end of Oct 2025
-  kpi_target_date: '2025-10-31'
-  kpi_target_percentage: 100
-  
-  # Windows 11 scope criteria:
-  # 1. Latest OS Supported contains "Win11"
-  # 2. Enterprise or LTSC = "Enterprise" 
-  # 3. Action to take is any EXCEPT ESOL 2024 or ESOL 2025
-  
-  # Only Enterprise EUCs are targeted for Windows 11 upgrade
-  target_editions:
-  - Enterprise
-  
-  # LTSC devices are excluded from Windows 11 push
-  exclude_editions:
-  - LTSC
-  
-  # ESOL categories that are EXCLUDED from Windows 11 upgrade (replaced instead)
-  excluded_actions:
-  - esol_2024  # Urgent Replacement - replaced with Win11 devices
-  - esol_2025  # Replace by 14/10/2025 - replaced with Win11 devices
-  
-  # Windows 11 OS detection patterns
-  win11_patterns:
-  - Win11
-  
-  # Migration categories for replacement pathway (not upgrade)
-  migration_categories:
-  - esol_2024  # Replace with Win11 devices
-  - esol_2025  # Replace with Win11 devices

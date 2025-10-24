@@ -21,6 +21,7 @@ def main():
     # Load configuration
     config_manager = ConfigManager()
     esol_config = config_manager.get_esol_criteria()
+    win11_config = config_manager.get_win11_criteria()
     kiosk_config = esol_config['kiosk_detection']
     data_mapping = esol_config['data_mapping']
     
@@ -57,7 +58,7 @@ def main():
     ltsc_kiosk_count = len(ltsc_kiosk_df)
     
     # Check for Windows 11 patterns
-    win11_patterns = esol_config['windows11_compatibility']['win11_patterns']
+    win11_patterns = win11_config['win11_patterns']
     win11_pattern = '|'.join(win11_patterns)
     ltsc_not_win11_count = (~ltsc_kiosk_df[os_col].str.contains(win11_pattern, case=False, na=False)).sum()
     

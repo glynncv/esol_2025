@@ -1,0 +1,26 @@
+[
+  {
+    "category": "ESOL 2024",
+    "target_date": "2025-06-30",
+    "days_remaining": -117,
+    "remaining_devices": 8,
+    "daily_burn_rate_needed": 0,
+    "status": "AT RISK"
+  },
+  {
+    "category": "ESOL 2025",
+    "target_date": "2025-10-14",
+    "days_remaining": -11,
+    "remaining_devices": 168,
+    "daily_burn_rate_needed": 0,
+    "status": "AT RISK"
+  },
+  {
+    "category": "ESOL 2026",
+    "target_date": "2026-11-11",
+    "days_remaining": 382,
+    "remaining_devices": 258,
+    "daily_burn_rate_needed": 0.68,
+    "status": "ON TRACK"
+  }
+]

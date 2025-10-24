@@ -27,10 +27,10 @@ python scripts/okr_dashboard.py
 ### ESOL Analysis
 ```bash
 # Basic ESOL analysis
-.\run_simple_analysis.bat
+.\run_esol_analysis.bat
 
 # With site breakdown and burndown tracking
-.\run_simple_analysis.bat --site-table --burndown
+.\run_esol_analysis.bat --site-table --burndown
 
 # Dedicated ESOL burndown analysis
 .\run_esol_burndown.bat
@@ -42,6 +42,9 @@ python scripts/okr_dashboard.py
 esol_2025/
 ├── scripts/                    # Python analysis scripts
 ├── config/                     # YAML configuration files
+│   ├── esol_criteria.yaml      # ESOL categories, data mappings, kiosk detection
+│   ├── okr_criteria.yaml       # OKR targets, weights, milestone dates
+│   └── win11_criteria.yaml     # Windows 11 eligibility, upgrade logic, KPI targets
 ├── data/
 │   ├── raw/                    # Input Excel files (not tracked in git)
 │   ├── processed/              # Exported CSV/JSON data
@@ -70,6 +73,29 @@ esol_2025/
 - **Quick status checks**: Daily progress monitoring
 - **Executive summaries**: Management-ready reports
 - **Site analysis**: Both ESOL and Windows 11 site breakdowns
+
+## ⚙️ Configuration
+
+The project uses a modular YAML configuration system:
+
+### **Configuration Files**
+- **`config/esol_criteria.yaml`**: ESOL categories, data mappings, kiosk detection
+- **`config/okr_criteria.yaml`**: OKR targets, weights, milestone dates
+- **`config/win11_criteria.yaml`**: Windows 11 eligibility, upgrade logic, KPI targets
+
+### **Windows 11 Eligibility Logic**
+```yaml
+# Windows 11 eligibility criteria (all must be met):
+# 1. LTSC or Enterprise = "Enterprise" (only Enterprise devices targeted)
+# 2. EOSL Latest OS Build Supported contains "Win11" (device capability)
+# 3. Action to take is any EXCEPT ESOL 2024 or ESOL 2025 (exclude replacement devices)
+```
+
+### **Data Column Mappings**
+- **Eligibility**: `EOSL Latest OS Build Supported` (device capability)
+- **Upgrade Status**: `Current OS Build` (actual installation)
+- **Site Location**: `Site Location`
+- **Device Edition**: `LTSC or Enterprise`
 
 ## 🛠️ Setup
 
@@ -158,7 +184,7 @@ python scripts/esol_count.py --burndown
 python scripts/esol_count.py --site-table --burndown
 
 # Batch files
-.\run_simple_analysis.bat --site-table --burndown
+.\run_esol_analysis.bat --site-table --burndown
 .\run_esol_burndown.bat
 ```
 
@@ -281,7 +307,7 @@ python scripts/euc_summary.py
 | `run_dashboard.bat` | Interactive OKR dashboard | `.\run_dashboard.bat` |
 | `run_win11_analysis.bat` | Windows 11 analysis | `.\run_win11_analysis.bat --site-table --burndown` |
 | `run_win11_burndown.bat` | Windows 11 burndown only | `.\run_win11_burndown.bat` |
-| `run_simple_analysis.bat` | ESOL analysis | `.\run_simple_analysis.bat --site-table --burndown` |
+| `run_esol_analysis.bat` | ESOL analysis | `.\run_esol_analysis.bat --site-table --burndown` |
 | `run_esol_burndown.bat` | ESOL burndown only | `.\run_esol_burndown.bat` |
 | `run_okr_tracker.bat` | OKR tracking | `.\run_okr_tracker.bat monthly` |
 | `run_kiosk_analysis.bat` | Kiosk analysis | `.\run_kiosk_analysis.bat` |
@@ -314,7 +340,7 @@ Based on recent analysis:
 
 1. **Quick Start**: Run `.\run_dashboard.bat` for interactive analysis
 2. **Windows 11 Focus**: Use `.\run_win11_analysis.bat --burndown` for migration tracking
-3. **ESOL Focus**: Use `.\run_simple_analysis.bat --burndown` for replacement planning
+3. **ESOL Focus**: Use `.\run_esol_analysis.bat --burndown` for replacement planning
 4. **Daily Monitoring**: Use the OKR dashboard for quick status checks
 
 ## 📞 Support

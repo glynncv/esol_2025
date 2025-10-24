@@ -2,19 +2,19 @@
 echo Kiosk EUC Analysis Tool
 echo =======================
 
-if "%~1"=="help" (
-    echo Usage: run_kiosk_analysis.bat [output_file]
-    echo Examples: run_kiosk_analysis.bat [auto-save] or run_kiosk_analysis.bat custom.md
-    goto end
-)
+if "%~1"=="help" goto help
+echo Running Kiosk EUC analysis...
+python scripts/kiosk_count.py %*
+goto end
 
-if "%~1"=="" (
-    echo Running Kiosk EUC analysis...
-    python scripts/kiosk_count.py
-) else (
-    echo Running Kiosk EUC analysis...
-    python scripts/kiosk_count.py --output %~1
-)
+:help
+echo Usage: run_kiosk_analysis.bat [options]
+echo Options:
+echo   [no args]           - Basic kiosk analysis (auto-save)
+echo   --output filename   - Custom output file
+echo Examples:
+echo   run_kiosk_analysis.bat
+echo   run_kiosk_analysis.bat --output custom_kiosk_report.md
 
 :end
 echo.

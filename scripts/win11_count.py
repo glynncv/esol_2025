@@ -22,7 +22,7 @@ def main():
     # Load configuration
     config_manager = ConfigManager()
     esol_config = config_manager.get_esol_criteria()
-    win11_config = esol_config['windows11_compatibility']
+    win11_config = config_manager.get_win11_criteria()
     data_mapping = esol_config['data_mapping']
     
     # Read the Excel file
@@ -72,15 +72,25 @@ def main():
             'Device Name': 'count'  # Total Enterprise devices per site
         }).rename(columns={'Device Name': 'Total_Devices'})
         
-        # Calculate Windows 11 eligible devices (Enterprise devices excluding ESOL 2024/2025)
+        # Calculate Windows 11 eligible devices (Enterprise devices excluding ESOL 2024/2025 that support Win11)
         eligible_mask = ~enterprise_df[action_col].isin(migration_actions)
         eligible_df = enterprise_df[eligible_mask]
-        eligible_counts = eligible_df.groupby(site_col)['Device Name'].count()
+        
+        # Filter for devices that support Win11 (EOSL Latest OS Build Supported)
+        win11_supported_mask = eligible_df[os_col].str.contains(win11_pattern, case=False, na=False)
+        win11_supported_df = eligible_df[win11_supported_mask]
+        
+        eligible_counts = win11_supported_df.groupby(site_col)['Device Name'].count()
         site_data['Win11_Eligible_Count'] = site_data.index.map(eligible_counts).fillna(0).astype(int)
         
         # Calculate Windows 11 devices (of those eligible, how many have Win11 OS)
-        win11_eligible_df = enterprise_df[enterprise_win11_mask]
-        win11_counts = win11_eligible_df.groupby(site_col)['Device Name'].count()
+        # Check Current OS Build for devices that are already upgraded
+        current_os_col = data_mapping['current_os_column']  # Use Current OS Build for upgrade status
+        win11_upgraded_mask = (
+            win11_supported_df[current_os_col].str.contains(win11_pattern, case=False, na=False)
+        )
+        win11_upgraded_df = win11_supported_df[win11_upgraded_mask]
+        win11_counts = win11_upgraded_df.groupby(site_col)['Device Name'].count()
         site_data['Win11_Count'] = site_data.index.map(win11_counts).fillna(0).astype(int)
         
         # Calculate Pending devices (of those eligible, how many are still pending upgrade)
