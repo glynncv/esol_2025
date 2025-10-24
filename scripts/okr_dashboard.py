@@ -13,6 +13,7 @@ from datetime import datetime
 sys.path.append(str(Path(__file__).parent))
 
 from separated_esol_analyzer import OKRAnalysisOrchestrator
+from data_utils import get_data_file_path
 
 def print_menu():
     """Display the main menu"""
@@ -22,17 +23,19 @@ def print_menu():
     print("1. 📊 Quick Status Check (Daily)")
     print("2. 📋 Executive Summary")  
     print("3. 📈 Full OKR Tracker")
-    print("4. 🏢 Site Analysis")
-    print("5. 💾 Save Executive Report")
-    print("6. ❓ Help")
-    print("7. 🚪 Exit")
+    print("4. 🏢 Site Analysis (ESOL)")
+    print("5. 🖥️ Windows 11 Site Analysis")
+    print("6. 💾 Save Executive Report")
+    print("7. ❓ Help")
+    print("8. 🚪 Exit")
     print("="*50)
 
 def quick_status():
     """Run quick status check"""
     try:
         orchestrator = OKRAnalysisOrchestrator()
-        metrics = orchestrator.get_metrics_json('data/raw/EUC_ESOL.xlsx')
+        data_file = get_data_file_path()
+        metrics = orchestrator.get_metrics_json(data_file)
         
         print(f"""
 🎯 OKR QUICK STATUS CHECK
@@ -51,7 +54,7 @@ Priority Actions:
 2. 🟡 Q3 Planning: {metrics['kr2_milestone_target_devices']} ESOL 2025 devices  
 3. 🟢 Re-provision: {metrics['enterprise_kiosk_count']} Enterprise kiosk devices
 
-Total Investment: {metrics['excluded_device_count']} devices requiring replacement
+Total Investment: {metrics['total_devices'] - metrics['compatible_device_count']} devices requiring replacement
 """)
     except Exception as e:
         print(f"❌ Error: {e}")
@@ -60,7 +63,8 @@ def executive_summary():
     """Display executive summary"""
     try:
         orchestrator = OKRAnalysisOrchestrator()
-        summary = orchestrator.generate_executive_summary('data/raw/EUC_ESOL.xlsx')
+        data_file = get_data_file_path()
+        summary = orchestrator.generate_executive_summary(data_file)
         print(summary)
     except Exception as e:
         print(f"❌ Error: {e}")
@@ -69,17 +73,40 @@ def full_tracker():
     """Display full OKR tracker"""
     try:
         orchestrator = OKRAnalysisOrchestrator()
-        tracker = orchestrator.generate_full_report('data/raw/EUC_ESOL.xlsx')
+        data_file = get_data_file_path()
+        tracker = orchestrator.generate_full_report(data_file)
         print(tracker)
     except Exception as e:
         print(f"❌ Error: {e}")
 
 def site_analysis():
-    """Display site analysis"""
+    """Display ESOL site analysis"""
     try:
         orchestrator = OKRAnalysisOrchestrator()
-        analysis = orchestrator.generate_site_analysis('data/raw/EUC_ESOL.xlsx', 10)
+        data_file = get_data_file_path()
+        analysis = orchestrator.generate_site_analysis(data_file, 10)
         print(analysis)
+    except Exception as e:
+        print(f"❌ Error: {e}")
+
+def win11_site_analysis():
+    """Display Windows 11 site analysis"""
+    try:
+        import subprocess
+        import sys
+        
+        # Run the Windows 11 site analysis
+        result = subprocess.run([
+            sys.executable, 'scripts/win11_count.py', '--site-table'
+        ], capture_output=True, text=True, cwd=Path.cwd())
+        
+        if result.returncode == 0:
+            print("🖥️ Windows 11 Site Analysis")
+            print("=" * 50)
+            print(result.stdout)
+        else:
+            print(f"❌ Error running Windows 11 analysis: {result.stderr}")
+            
     except Exception as e:
         print(f"❌ Error: {e}")
 
@@ -87,7 +114,8 @@ def save_executive_report():
     """Save executive report to file"""
     try:
         orchestrator = OKRAnalysisOrchestrator()
-        summary = orchestrator.generate_executive_summary('data/raw/EUC_ESOL.xlsx')
+        data_file = get_data_file_path()
+        summary = orchestrator.generate_executive_summary(data_file)
         
         # Create reports directory if it doesn't exist
         reports_dir = Path('data/reports')
@@ -129,12 +157,17 @@ This dashboard provides easy access to ESOL OKR analysis tools:
    - Complete progress tracking and risk assessment
    - Best for: Monthly reviews, deep analysis
 
-4. SITE ANALYSIS
+4. SITE ANALYSIS (ESOL)
    - Site-by-site breakdown of ESOL devices
    - Priority ranking by device count
    - Best for: Planning site visits, resource allocation
 
-5. SAVE EXECUTIVE REPORT
+5. WINDOWS 11 SITE ANALYSIS
+   - Site-by-site Windows 11 deployment status
+   - Shows eligible, upgraded, and pending devices
+   - Best for: Windows 11 upgrade planning and tracking
+
+6. SAVE EXECUTIVE REPORT
    - Saves executive summary to timestamped file
    - Files saved to data/reports/ directory
    - Best for: Record keeping, sharing reports
@@ -146,9 +179,10 @@ This dashboard provides easy access to ESOL OKR analysis tools:
 - Site Analysis helps prioritize remediation efforts
 
 🔧 Technical Notes:
-- Data source: data/raw/EUC_ESOL.xlsx
+- Data source: Auto-detected from data/raw/ or EUC_DATA_FILE environment variable
 - Configuration: config/ directory (YAML files)
 - Reports saved to: data/reports/
+- Shared utilities: scripts/data_utils.py for consistent file handling
 """)
 
 def main():
@@ -174,22 +208,26 @@ def main():
                 full_tracker()
                 
             elif choice == '4':
-                print("\n🏢 Running Site Analysis...")
+                print("\n🏢 Running ESOL Site Analysis...")
                 site_analysis()
                 
             elif choice == '5':
+                print("\n🖥️ Running Windows 11 Site Analysis...")
+                win11_site_analysis()
+                
+            elif choice == '6':
                 print("\n💾 Saving Executive Report...")
                 save_executive_report()
                 
-            elif choice == '6':
+            elif choice == '7':
                 show_help()
                 
-            elif choice == '7':
+            elif choice == '8':
                 print("\n👋 Goodbye!")
                 break
                 
             else:
-                print("❌ Invalid choice. Please enter a number from 1-7.")
+                print("❌ Invalid choice. Please enter a number from 1-8.")
                 
         except KeyboardInterrupt:
             print("\n\n👋 Goodbye!")

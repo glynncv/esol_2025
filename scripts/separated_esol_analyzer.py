@@ -33,6 +33,7 @@ from pathlib import Path
 from typing import Dict, Any, List, Optional, Union
 from datetime import datetime, date
 import argparse
+from data_utils import get_data_file_path, add_data_file_argument, validate_data_file
 
 # Fix UTF-8 encoding for Windows console to handle emoji characters
 if sys.platform == "win32":
@@ -104,9 +105,9 @@ class ConfigManager:
                 },
                 'data_mapping': {
                     'action_column': 'Action to take',
-                    'os_column': 'OS Build',
-                    'edition_column': 'Enterprise or LTSC',
-                    'cost_column': 'Estimate Cost for Replacement $',
+                    'os_column': 'Current OS Build',
+                    'edition_column': 'LTSC or Enterprise',
+                    'cost_column': 'Cost for Replacement $',
                     'site_column': 'Site Location',
                     'user_columns': {
                         'current': 'Current User Logged On',
@@ -119,7 +120,9 @@ class ConfigManager:
                     'logic': 'OR'
                 },
                 'windows11_compatibility': {
-                    'exclude_esol_categories': ['esol_2024', 'esol_2025'],
+                    'migration_categories': ['esol_2024', 'esol_2025'],
+                    'target_editions': ['Enterprise'],
+                    'exclude_editions': ['LTSC'],
                     'win11_patterns': ['Win11']
                 }
             }
@@ -286,16 +289,35 @@ class DataAnalyzer:
         enterprise_count = len(df[df[edition_col] == 'Enterprise'])
         ltsc_count = len(df[df[edition_col] == 'LTSC'])
         
-        # Count Windows 11 devices
+        # Count Windows 11 devices (Enterprise focus for 2025 push)
         win11_patterns = '|'.join(self.config['windows11_compatibility']['win11_patterns'])
-        win11_count = len(df[df[os_col].str.contains(win11_patterns, na=False)])
+        
+        # Filter for Enterprise devices only (the 2025 Windows 11 push target)
+        enterprise_mask = df[edition_col] == 'Enterprise'
+        enterprise_df = df[enterprise_mask]
+        
+        # Count Enterprise devices already on Windows 11
+        enterprise_win11_count = len(enterprise_df[enterprise_df[os_col].str.contains(win11_patterns, na=False)])
+        
+        # Count Enterprise devices that will get Windows 11 via ESOL replacement
+        migration_categories = self.config['windows11_compatibility']['migration_categories']
+        migration_actions = [self.esol_categories[cat]['action_value'] for cat in migration_categories]
+        enterprise_esol_mask = enterprise_df[action_col].isin(migration_actions)
+        enterprise_esol_count = len(enterprise_df[enterprise_esol_mask])
+        
+        # Calculate Enterprise Windows 11 adoption path
+        total_enterprise_win11_path = enterprise_win11_count + enterprise_esol_count
+        enterprise_win11_adoption_pct = (total_enterprise_win11_path / len(enterprise_df)) * 100 if len(enterprise_df) > 0 else 0
         
         return {
             'total_devices': total_devices,
             **esol_counts,
             'enterprise_count': enterprise_count,
             'ltsc_count': ltsc_count,
-            'win11_count': win11_count
+            'win11_count': enterprise_win11_count,  # Enterprise devices already on Win11
+            'enterprise_win11_adoption_count': total_enterprise_win11_path,
+            'enterprise_win11_adoption_percentage': enterprise_win11_adoption_pct,
+            'enterprise_esol_count': enterprise_esol_count
         }
     
     def extract_kiosk_counts(self, df: pd.DataFrame) -> Dict[str, int]:
@@ -303,21 +325,31 @@ class DataAnalyzer:
         kiosk_config = self.config['kiosk_detection']
         user_mapping = self.data_mapping['user_columns']
         edition_col = self.data_mapping['edition_column']
+        device_name_col = self.data_mapping['device_name_column']
         
-        patterns = '|'.join(kiosk_config['patterns'])
+        # Get patterns for device name and user fields
+        device_patterns = '|'.join(kiosk_config['device_name_patterns'])
+        user_patterns = '|'.join(kiosk_config['user_loggedon_patterns'])
         case_sensitive = kiosk_config['case_sensitive']
+        
+        # Check device name for kiosk patterns
+        device_mask = df[device_name_col].str.contains(
+            device_patterns, case=case_sensitive, na=False)
         
         # Check user fields for kiosk patterns
         current_mask = df[user_mapping['current']].str.contains(
-            patterns, case=case_sensitive, na=False)
+            user_patterns, case=case_sensitive, na=False)
         last_mask = df[user_mapping['last']].str.contains(
-            patterns, case=case_sensitive, na=False)
+            user_patterns, case=case_sensitive, na=False)
         
-        # Apply logic (OR/AND)
+        # Apply logic (OR/AND) for user fields
         if kiosk_config['logic'].upper() == 'OR':
-            kiosk_mask = current_mask | last_mask
+            user_mask = current_mask | last_mask
         else:  # AND logic
-            kiosk_mask = current_mask & last_mask
+            user_mask = current_mask & last_mask
+        
+        # Combine device name and user patterns with OR logic
+        kiosk_mask = device_mask | user_mask
         
         kiosk_devices = df[kiosk_mask]
         
@@ -394,16 +426,18 @@ class BusinessLogicCalculator:
         """Calculate Windows 11 compatibility based on configuration"""
         total_devices = raw_counts['total_devices']
         
-        # Calculate excluded ESOL count based on configuration
-        exclude_categories = self.esol_config['windows11_compatibility']['exclude_esol_categories']
-        excluded_count = sum(raw_counts[f"{cat}_count"] for cat in exclude_categories)
+        # Calculate Enterprise Windows 11 adoption path
+        migration_categories = self.esol_config['windows11_compatibility']['migration_categories']
+        enterprise_esol_count = sum(raw_counts[f"{cat}_count"] for cat in migration_categories)
+        enterprise_win11_count = raw_counts['win11_count']
         
-        compatible_count = total_devices - excluded_count
+        compatible_count = enterprise_win11_count + enterprise_esol_count
         compatibility_percentage = (compatible_count / total_devices) * 100 if total_devices > 0 else 0
         
         return {
             'compatible_device_count': compatible_count,
-            'excluded_device_count': excluded_count,
+            'enterprise_win11_count': enterprise_win11_count,
+            'enterprise_esol_count': enterprise_esol_count,
             'compatibility_percentage': compatibility_percentage
         }
     
@@ -624,7 +658,7 @@ class PresentationFormatter:
 
 | Category | Total | Compatible | Incompatible | Target | Current | Gap | Status |
 |----------|-------|------------|--------------|--------|---------|-----|--------|
-| All Devices | {metrics['total_devices']} | {metrics['compatible_device_count']} ({compatibility_pct:.1f}%) | {metrics['excluded_device_count']} ({100-compatibility_pct:.1f}%) | {target_pct}% | {compatibility_pct:.1f}% | {gap:.1f}% | {status_emoji} {status_text} |
+| All Devices | {metrics['total_devices']} | {metrics['compatible_device_count']} ({compatibility_pct:.1f}%) | {metrics['total_devices'] - metrics['compatible_device_count']} ({100-compatibility_pct:.1f}%) | {target_pct}% | {compatibility_pct:.1f}% | {gap:.1f}% | {status_emoji} {status_text} |
 
 **Windows 11 Compatibility Progress:**
 - {compat_progress_bar} {compatibility_pct:.1f}% Complete
@@ -633,7 +667,7 @@ class PresentationFormatter:
 - {adoption_progress_bar} {win11_adoption_pct:.1f}% Complete
 
 **Action Plan:**
-- Address all {metrics['excluded_device_count']} ESOL devices through remediation plan
+- Address all {metrics['total_devices'] - metrics['compatible_device_count']} ESOL devices through remediation plan
 - Continue migration plan for compatible Enterprise devices
 - Special handling for kiosk devices to be re-provisioned to LTSC
 
@@ -692,7 +726,7 @@ class PresentationFormatter:
 - Total Devices: {metrics['total_devices']:,}
 - ESOL 2024: {metrics['esol_2024_count']} devices ({metrics['esol_2024_percentage']:.2f}%)
 - ESOL 2025: {metrics['esol_2025_count']} devices ({metrics['esol_2025_percentage']:.2f}%)
-- **Total ESOL: {metrics['excluded_device_count']} devices ({100-metrics['compatibility_percentage']:.2f}%)**
+- **Total ESOL: {metrics['total_devices'] - metrics['compatible_device_count']} devices ({100-metrics['compatibility_percentage']:.2f}%)**
 - Non-ESOL: {metrics['compatible_device_count']} devices ({metrics['compatibility_percentage']:.2f}%)
 
 ---
@@ -733,7 +767,7 @@ class PresentationFormatter:
 ## Key Highlights
 - **ESOL 2024**: {all_metrics['esol_2024_count']} devices require immediate replacement
 - **Windows 11 Compatibility**: {all_metrics['compatibility_percentage']:.1f}% achieved (target: 90%)
-- **Total Investment Required**: Procurement needed for {all_metrics['excluded_device_count']} devices
+- **Total Investment Required**: Procurement needed for {all_metrics['total_devices'] - all_metrics['compatible_device_count']} devices
 
 ## Critical Actions Required
 1. **Immediate**: Procure {all_metrics['esol_2024_count']} ESOL 2024 devices by June 30
@@ -845,8 +879,7 @@ class OKRAnalysisOrchestrator:
 def main():
     """Main function with command line interface"""
     parser = argparse.ArgumentParser(description='Analyze ESOL device data for OKR tracking')
-    parser.add_argument('filepath', nargs='?', default='data/raw/EUC_ESOL.xlsx',
-                       help='Path to the Excel file containing device data (default: data/raw/EUC_ESOL.xlsx)')
+    add_data_file_argument(parser, 'Path to the Excel file containing device data')
     parser.add_argument('--config-path', default='config/', help='Path to configuration directory')
     parser.add_argument('--output', '-o', help='Output file for the report (optional - auto-saves to data/reports/ if not specified)')
     parser.add_argument('--format', choices=['full', 'executive', 'site', 'json', 'quick'], 
@@ -861,15 +894,18 @@ def main():
         orchestrator = OKRAnalysisOrchestrator(args.config_path)
         
         # Generate report based on format
+        data_file = get_data_file_path(args.data_file)
+        validate_data_file(data_file)
+        
         if args.format == 'full':
-            report = orchestrator.generate_full_report(args.filepath)
+            report = orchestrator.generate_full_report(data_file)
         elif args.format == 'executive':
-            report = orchestrator.generate_executive_summary(args.filepath)
+            report = orchestrator.generate_executive_summary(data_file)
         elif args.format == 'site':
-            report = orchestrator.generate_site_analysis(args.filepath, args.top_sites)
+            report = orchestrator.generate_site_analysis(data_file, args.top_sites)
         elif args.format == 'quick':
             # Quick status check
-            metrics = orchestrator.get_metrics_json(args.filepath)
+            metrics = orchestrator.get_metrics_json(data_file)
             report = f"""🎯 OKR QUICK STATUS CHECK
 {'='*50}
 Overall Score: {metrics['overall_score']:.1f}%
@@ -886,11 +922,11 @@ Priority Actions:
 2. 🟡 Q3 Planning: {metrics['kr2_milestone_target_devices']} ESOL 2025 devices  
 3. 🟢 Re-provision: {metrics['enterprise_kiosk_count']} Enterprise kiosk devices
 
-Total Investment: {metrics['excluded_device_count']} devices requiring replacement
+Total Investment: {metrics['total_devices'] - metrics['compatible_device_count']} devices requiring replacement
 """
         elif args.format == 'json':
             import json
-            metrics = orchestrator.get_metrics_json(args.filepath)
+            metrics = orchestrator.get_metrics_json(data_file)
             report = json.dumps(metrics, indent=2)
         
         # Output report

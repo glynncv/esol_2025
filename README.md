@@ -1,251 +1,222 @@
 # ESOL EUC Device Data Analysis
 
-This project provides tools to analyze End User Computing (EUC) device data for technical debt remediation, OKR tracking, and device refresh planning. It helps summarize device status, site-level needs, and cost projections for upcoming refresh cycles.
+This project provides comprehensive tools to analyze End User Computing (EUC) device data for technical debt remediation, OKR tracking, device refresh planning, and Windows 11 migration. It helps summarize device status, site-level needs, cost projections, and burndown tracking for upcoming refresh cycles.
 
-## Project Structure
+## 🚀 Quick Start
 
-- `scripts/` — Python scripts for analysis
-- `data/raw/` — Raw input data (Excel files, not tracked in git)
-- `data/processed/` — Processed outputs and exports (e.g., per-site summaries, auto-generated site tables)
-- `data/reports/` — Reports and executive summaries (auto-saved by all scripts)
-- `config/` — YAML configuration files for OKR criteria and ESOL definitions
-
-## Setup
-
-1. Clone the repository:
-   ```sh
-   git clone <your-repo-url>
-   cd <your-repo-directory>
-   ```
-2. Install Python dependencies:
-   ```sh
-   pip install -r requirements.txt
-   ```
-3. Place your raw Excel data file (e.g., `EUC_ESOL.xlsx`) in `data/raw/`.
-
-## Quick Start - Helper Tools
-
-### 🎯 OKR Dashboard (Recommended)
-Easy-to-use interactive dashboard for daily OKR analysis:
-```sh
+### Interactive Dashboard (Recommended)
+```bash
+# Launch the comprehensive OKR dashboard
+.\run_dashboard.bat
+# or
 python scripts/okr_dashboard.py
 ```
 
-### ⚡ Quick ESOL Analysis
-For quick device counts and categories:
-```bat
-# Windows batch file
-.\run_simple_analysis.bat
-
-# Or directly with Python
-python scripts/esol_count.py
-```
-
-### 🖥️ Kiosk EUC Analysis
-For Kiosk device analysis and Windows 11 migration status:
-```bat
-# Windows batch file
-.\run_kiosk_analysis.bat
-
-# Or directly with Python
-python scripts/kiosk_count.py
-```
-
-### 💻 Windows 11 EUC Analysis
-For Windows 11 device counting:
-```bat
-# Windows batch file
+### Windows 11 Analysis
+```bash
+# Basic Windows 11 analysis
 .\run_win11_analysis.bat
 
-# Or directly with Python
-python scripts/win11_count.py
+# With site breakdown and burndown tracking
+.\run_win11_analysis.bat --site-table --burndown
+
+# Dedicated burndown analysis
+.\run_win11_burndown.bat
 ```
 
-### 🔧 Configuration Helper
-Manage and validate OKR settings:
-```sh
-python scripts/config_helper.py
+### ESOL Analysis
+```bash
+# Basic ESOL analysis
+.\run_simple_analysis.bat
+
+# With site breakdown and burndown tracking
+.\run_simple_analysis.bat --site-table --burndown
+
+# Dedicated ESOL burndown analysis
+.\run_esol_burndown.bat
 ```
 
-## Analysis Scripts
+## 📁 Project Structure
 
-### 1. OKR Dashboard (Recommended)
-**`okr_dashboard.py`** - Interactive dashboard for comprehensive OKR analysis
+```
+esol_2025/
+├── scripts/                    # Python analysis scripts
+├── config/                     # YAML configuration files
+├── data/
+│   ├── raw/                    # Input Excel files (not tracked in git)
+│   ├── processed/              # Exported CSV/JSON data
+│   └── reports/                # Auto-generated reports
+├── notebooks/                  # Jupyter notebooks for analysis
+├── run_*.bat                   # Windows batch file launchers
+└── requirements.txt            # Python dependencies
+```
 
-#### Features:
+## 🎯 Key Features
+
+### **Windows 11 Migration Tracking**
+- **KPI Target**: 100% of eligible EUCs upgraded by Oct 31, 2025
+- **Site-level breakdown**: Track progress by location
+- **Burndown analysis**: Daily burn rate calculations and risk assessment
+- **Scope**: Enterprise devices only (excludes LTSC and ESOL replacement devices)
+
+### **ESOL Replacement Management**
+- **Multi-category tracking**: ESOL 2024 (Jun 30), ESOL 2025 (Oct 14), ESOL 2026 (Nov 11)
+- **Site prioritization**: Identify high-impact locations
+- **Cost analysis**: Replacement budget planning
+- **Burndown tracking**: Daily replacement rate monitoring
+
+### **OKR Dashboard**
+- **Interactive interface**: Easy-to-use menu system
+- **Quick status checks**: Daily progress monitoring
+- **Executive summaries**: Management-ready reports
+- **Site analysis**: Both ESOL and Windows 11 site breakdowns
+
+## 🛠️ Setup
+
+1. **Clone and install**:
+   ```bash
+   git clone <your-repo-url>
+   cd esol_2025
+   pip install -r requirements.txt
+   ```
+
+2. **Add your data**:
+   - Place `EUC_ESOL.xlsx` in `data/raw/`
+   - Or set environment variable: `EUC_DATA_FILE=/path/to/your/data.xlsx`
+
+## 📊 Analysis Scripts
+
+### 1. **OKR Dashboard** (`okr_dashboard.py`)
+**Interactive dashboard for comprehensive analysis**
+
+**Features:**
 - Quick status check (daily use)
 - Executive summary (management reports)
 - Full OKR tracker (comprehensive analysis)
-- Site analysis (priority locations)
+- Site analysis (ESOL and Windows 11)
 - Save executive reports with timestamps
 
-#### Usage:
-```sh
+**Usage:**
+```bash
 python scripts/okr_dashboard.py
+# or
+.\run_dashboard.bat
 ```
 
-### 2. OKR Tracker Generator
-**`okr_tracker.py`** - Professional OKR tracking with comprehensive reporting
-
-#### Features:
-- **Complete OKR framework** with weighted scoring system
-- **Progress tracking** with visual indicators and status levels
-- **Executive summaries** with financial impact analysis
-- **Site prioritization** based on ESOL device density
-- **Baseline tracking** for progress measurement over time
-- **Professional markdown output** with emojis and progress bars
-
-#### Usage Examples:
-```sh
-# Basic OKR report - auto-saves to data/reports/
-python scripts/okr_tracker.py data/raw/EUC_ESOL.xlsx
-
-# Custom output location
-python scripts/okr_tracker.py data/raw/EUC_ESOL.xlsx --output monthly_okr_report.md
-
-# With previous data comparison
-python scripts/okr_tracker.py data/raw/EUC_ESOL.xlsx --previous-data july_metrics.json --save-metrics august_metrics.json
-
-# Save current metrics for future comparison
-python scripts/okr_tracker.py data/raw/EUC_ESOL.xlsx --save-metrics current_metrics.json
-```
-
-### 3. Simple ESOL Counter
-**`esol_count.py`** - Simple device counting with category filtering and site summary table
+### 2. **Windows 11 Analysis** (`win11_count.py`)
+**Windows 11 migration tracking and KPI monitoring**
 
 **Features:**
-- Category-based ESOL device counting (2024, 2025, 2026, all)
-- Site summary table showing ESOL devices and replacement costs by location
-- **Auto-exports site data to `data/processed/`** (CSV + JSON formats)
-- Auto-saves reports to data/reports/ directory
-- Optional custom output paths
+- **KPI Tracking**: 100% eligible EUCs by Oct 31, 2025
+- **Site Analysis**: Progress by location (`--site-table`)
+- **Burndown Analysis**: Daily burn rates and risk assessment (`--burndown`)
+- **Scope**: Enterprise devices only (excludes ESOL replacement)
 
-#### Usage Examples:
-```sh
-# All categories (default) - auto-saves to data/reports/
-python scripts/esol_count.py
-
-# Specific categories - auto-saves to data/reports/
-python scripts/esol_count.py --category esol_2024
-python scripts/esol_count.py --category esol_2025
-python scripts/esol_count.py --category esol_2026
-
-# Site summary table - ESOL devices and cost by site
-# Auto-exports to data/processed/ (CSV + JSON)
-python scripts/esol_count.py --site-table
-
-# Combine category and site table
-python scripts/esol_count.py --category esol_2024 --site-table
-
-# Custom output location (optional)
-python scripts/esol_count.py --output "my_custom_report.md"
-```
-
-### 4. Advanced OKR Analyzer
-**`separated_esol_analyzer.py`** - Comprehensive OKR tracking with clean architecture
-
-#### Usage Examples:
-```sh
-# Quick status check - auto-saves to data/reports/
-python scripts/separated_esol_analyzer.py --format quick
-
-# Executive summary - auto-saves to data/reports/
-python scripts/separated_esol_analyzer.py --format executive
-
-# Full OKR tracker - auto-saves to data/reports/
-python scripts/separated_esol_analyzer.py --format full
-
-# Site analysis - auto-saves to data/reports/
-python scripts/separated_esol_analyzer.py --format site --top-sites 10
-
-# JSON export - auto-saves to data/reports/
-python scripts/separated_esol_analyzer.py --format json
-
-# Custom output location (optional)
-python scripts/separated_esol_analyzer.py --format executive --output "special_report.md"
-```
-
-### 5. Kiosk EUC Analysis
-**`kiosk_count.py`** - Analyze Kiosk EUC counts and Windows 11 migration status
-
-#### Features:
-- **Kiosk detection** using configurable patterns (Device Name contains "SHP" OR Current User LoggedOn contains "Kiosk")
-- **Enterprise vs LTSC breakdown** with percentages
-- **Windows 11 migration analysis** for LTSC Kiosk machines
-- **YAML configuration** integration for flexible pattern matching
-- **Auto-saves reports** to data/reports/ directory
-
-#### Usage Examples:
-```sh
-# Basic kiosk analysis - auto-saves to data/reports/
-python scripts/kiosk_count.py
-
-# Custom output location (optional)
-python scripts/kiosk_count.py --output "kiosk_analysis.md"
-```
-
-### 6. Windows 11 EUC Analysis
-**`win11_count.py`** - Count Windows 11 EUCs based on OS Build criteria
-
-#### Features:
-- **Windows 11 detection** using OS Build column (begins with "Win11")
-- **Simple counting** with percentage calculations
-- **Auto-saves reports** to data/reports/ directory
-
-#### Usage Examples:
-```sh
-# Basic Windows 11 analysis - auto-saves to data/reports/
+**Usage:**
+```bash
+# Basic analysis
 python scripts/win11_count.py
 
-# Custom output location (optional)
-python scripts/win11_count.py --output "win11_analysis.md"
+# With site breakdown
+python scripts/win11_count.py --site-table
+
+# With burndown analysis
+python scripts/win11_count.py --burndown
+
+# Both site and burndown
+python scripts/win11_count.py --site-table --burndown
+
+# Batch files
+.\run_win11_analysis.bat --site-table --burndown
+.\run_win11_burndown.bat
 ```
 
-### 7. ESOL Data Analysis
-**`esol-data-analysis-python.py`** - Comprehensive ESOL analysis with cost projections
+### 3. **ESOL Analysis** (`esol_count.py`)
+**ESOL replacement tracking and site management**
 
-#### Usage Examples:
-```sh
-# Full analysis - auto-saves to data/reports/
-python scripts/esol-data-analysis-python.py
+**Features:**
+- **Multi-category tracking**: ESOL 2024, 2025, 2026
+- **Site Analysis**: Device counts and costs by location (`--site-table`)
+- **Burndown Analysis**: Daily replacement rates (`--burndown`)
+- **Category filtering**: Focus on specific ESOL years
 
-# JSON metrics - auto-saves to data/reports/
-python scripts/esol-data-analysis-python.py --json
+**Usage:**
+```bash
+# All categories
+python scripts/esol_count.py
 
-# Custom output location (optional)
-python scripts/esol-data-analysis-python.py --output "cost_analysis.md"
+# Specific category
+python scripts/esol_count.py --category esol_2024
+
+# With site breakdown
+python scripts/esol_count.py --site-table
+
+# With burndown analysis
+python scripts/esol_count.py --burndown
+
+# Both site and burndown
+python scripts/esol_count.py --site-table --burndown
+
+# Batch files
+.\run_simple_analysis.bat --site-table --burndown
+.\run_esol_burndown.bat
 ```
 
-## 📁 Auto-Save Reports
+### 4. **OKR Tracker** (`okr_tracker.py`)
+**Professional OKR tracking with comprehensive reporting**
 
-**All scripts now automatically save reports to `data/reports/` when no output path is specified:**
+**Features:**
+- Weighted scoring system (KR1: 25%, KR2: 25%, KR3: 40%, KR4: 10%)
+- Progress visualization with status indicators
+- Baseline tracking for historical progress
+- Financial impact analysis
+- Site prioritization
 
-- **Timestamped files**: No more overwriting previous reports
-- **Format-specific naming**: Each script generates appropriately named files
-- **Consistent behavior**: Same auto-save pattern across all analysis scripts
-- **Optional custom paths**: Still supports `--output` parameter for custom locations
+**Usage:**
+```bash
+# Basic OKR report
+python scripts/okr_tracker.py
 
-### Report File Naming:
-- `OKR_Tracker_{timestamp}.md` - from `okr_tracker.py` (auto-saves to data/reports/)
-- `ESOL_Count_{category}_{timestamp}.md` - from `esol_count.py`
-- `Kiosk_Count_{timestamp}.md` - from `kiosk_count.py`
-- `Win11_Count_{timestamp}.md` - from `win11_count.py`
-- `Executive_Summary_{timestamp}.md` - from `separated_esol_analyzer.py`
-- `Quick_Status_{timestamp}.md` - from `separated_esol_analyzer.py`
-- `ESOL_Analysis_{timestamp}.md` - from `esol-data-analysis-python.py`
-- `OKR_Metrics_{timestamp}.json` - from `separated_esol_analyzer.py`
+# Monthly report
+.\run_okr_tracker.bat monthly
 
-## 🎯 OKR Tracking Features
+# Compare with previous data
+.\run_okr_tracker.bat compare previous_metrics.json
+```
 
-### **Professional OKR Framework**
-The `okr_tracker.py` script provides enterprise-grade OKR tracking:
+### 5. **Kiosk Analysis** (`kiosk_count.py`)
+**Kiosk device analysis and Windows 11 migration**
 
-- **Weighted Scoring System**: KR1 (25%), KR2 (25%), KR3 (40%), KR4 (10%)
-- **Progress Visualization**: Progress bars, status emojis, and color-coded indicators
-- **Baseline Tracking**: Historical progress measurement with configurable baselines
-- **Financial Impact**: Cost projections and replacement budget planning
-- **Site Prioritization**: Top 5 sites ranked by ESOL device density
-- **Executive Reporting**: Management-ready summaries with actionable recommendations
+**Features:**
+- Kiosk detection using configurable patterns
+- Enterprise vs LTSC breakdown
+- Windows 11 migration analysis
+- Auto-saves reports to data/reports/
+
+**Usage:**
+```bash
+python scripts/kiosk_count.py
+# or
+.\run_kiosk_analysis.bat
+```
+
+### 6. **EUC Summary** (`euc_summary.py`)
+**Cross-tool validation and standardized metrics**
+
+**Features:**
+- Standardized metrics extraction
+- Multiple output formats (text, JSON)
+- Data integrity validation
+- Smart file detection
+
+**Usage:**
+```bash
+python scripts/euc_summary.py
+# or
+.\run_euc_summary.bat
+```
+
+## 🎯 OKR Framework
 
 ### **Key Results Tracked**
 1. **KR1**: ESOL 2024 remediation (0% target by June 30, 2025)
@@ -253,109 +224,70 @@ The `okr_tracker.py` script provides enterprise-grade OKR tracking:
 3. **KR3**: Windows 11 compatibility (90% target by October 31, 2025)
 4. **KR4**: Enterprise kiosk LTSC re-provisioning (0 devices by June 30, 2025)
 
-## 📊 Processed Data Exports
+### **Scoring System**
+- **Weighted scoring**: KR1 (25%), KR2 (25%), KR3 (40%), KR4 (10%)
+- **Status levels**: 🟢 ON TRACK, 🟡 CAUTION, 🔴 AT RISK
+- **Progress visualization**: Progress bars and color-coded indicators
 
-**Site analysis data automatically exported to `data/processed/` for further analysis:**
+## 📈 Burndown Analysis
 
-### Site Summary Exports:
-- **CSV Format**: `site_esol_summary_{timestamp}.csv` - Excel/Sheets compatible
-- **JSON Format**: `site_esol_summary_{timestamp}.json` - API/programmatic use
-- **Data Includes**: ESOL counts by year (2024, 2025, 2026), total devices, replacement costs
-- **Auto-generated**: Created automatically when using `--site-table` option
+### **Windows 11 Burndown**
+- **Target**: 100% of eligible EUCs by Oct 31, 2025
+- **Risk levels**: HIGH (>1 device/day), MEDIUM (0.5-1 device/day), LOW (<0.5 device/day)
+- **Daily burn rate**: Calculated based on remaining devices and days
 
-### Export Location:
-```
-data/processed/
-├── site_esol_summary_20250815_112356.csv  ← CSV format
-└── site_esol_summary_20250815_112356.json ← JSON format
-```
+### **ESOL Burndown**
+- **Multi-category**: Separate tracking for 2024, 2025, 2026 deadlines
+- **Risk assessment**: Based on daily replacement rates needed
+- **Site prioritization**: Focus on high-impact locations
 
-## Batch Files (Windows)
+## 📁 Auto-Save Reports
 
-### `run_dashboard.bat`
-Launches the interactive OKR dashboard:
-```cmd
-.\run_dashboard.bat
-```
+**All scripts automatically save reports to `data/reports/` with timestamped filenames:**
 
-### `run_okr_tracker.bat` (NEW)
-Professional OKR tracking with comprehensive reporting:
-```cmd
-# Show help
-.\run_okr_tracker.bat help
+- `Win11_Count_{timestamp}.md` - Windows 11 analysis
+- `Win11_Burndown_{timestamp}.md` - Windows 11 burndown
+- `ESOL_Count_{category}_{timestamp}.md` - ESOL analysis
+- `ESOL_Burndown_{timestamp}.md` - ESOL burndown
+- `OKR_Tracker_{timestamp}.md` - OKR tracking
+- `Executive_Summary_{timestamp}.md` - Executive summaries
 
-# Basic OKR report (auto-saves to data/reports/)
-.\run_okr_tracker.bat
+## 📊 Data Exports
 
-# Monthly report with timestamped filename
-.\run_okr_tracker.bat monthly
+**Site analysis data automatically exported to `data/processed/`:**
 
-# Compare with previous metrics
-.\run_okr_tracker.bat compare july_metrics.json
+- **CSV Format**: Excel/Sheets compatible
+- **JSON Format**: API/programmatic use
+- **Data Includes**: Device counts, costs, percentages by site
+- **Auto-generated**: Created with `--site-table` option
 
-# Save current metrics for future comparison
-.\run_okr_tracker.bat metrics
-```
+## 🔧 Configuration
 
-### `run_simple_analysis.bat`
-Quick ESOL analysis with category filtering:
-```cmd
-# Show help
-.\run_simple_analysis.bat help
+### **ESOL Criteria** (`config/esol_criteria.yaml`)
+- ESOL category definitions and target dates
+- Windows 11 compatibility settings
+- Kiosk detection patterns
+- Data column mappings
 
-# All categories
-.\run_simple_analysis.bat
+### **OKR Criteria** (`config/okr_criteria.yaml`)
+- OKR targets and milestones
+- Scoring weights and thresholds
+- Progress tracking settings
 
-# Specific category
-.\run_simple_analysis.bat esol_2024
-.\run_simple_analysis.bat esol_2025
-.\run_simple_analysis.bat esol_2026
-```
+## 🖥️ Batch Files (Windows)
 
-### `run_kiosk_analysis.bat` (NEW)
-Kiosk EUC analysis with Windows 11 migration status:
-```cmd
-# Show help
-.\run_kiosk_analysis.bat help
+| File | Purpose | Usage |
+|------|---------|-------|
+| `run_dashboard.bat` | Interactive OKR dashboard | `.\run_dashboard.bat` |
+| `run_win11_analysis.bat` | Windows 11 analysis | `.\run_win11_analysis.bat --site-table --burndown` |
+| `run_win11_burndown.bat` | Windows 11 burndown only | `.\run_win11_burndown.bat` |
+| `run_simple_analysis.bat` | ESOL analysis | `.\run_simple_analysis.bat --site-table --burndown` |
+| `run_esol_burndown.bat` | ESOL burndown only | `.\run_esol_burndown.bat` |
+| `run_okr_tracker.bat` | OKR tracking | `.\run_okr_tracker.bat monthly` |
+| `run_kiosk_analysis.bat` | Kiosk analysis | `.\run_kiosk_analysis.bat` |
+| `run_euc_summary.bat` | EUC summary validation | `.\run_euc_summary.bat` |
 
-# Basic kiosk analysis (auto-saves to data/reports/)
-.\run_kiosk_analysis.bat
-
-# Custom output location
-.\run_kiosk_analysis.bat custom_kiosk_report.md
-```
-
-### `run_win11_analysis.bat` (NEW)
-Windows 11 EUC analysis and counting:
-```cmd
-# Show help
-.\run_win11_analysis.bat help
-
-# Basic Windows 11 analysis (auto-saves to data/reports/)
-.\run_win11_analysis.bat
-
-# Custom output location
-.\run_win11_analysis.bat custom_win11_report.md
-```
-
-## Current Data Summary
-
-Based on your latest OKR tracker analysis:
-- **Total Devices**: 4,348
-- **ESOL 2024**: 55 devices (1.26%) - 🔴 AT RISK
-- **ESOL 2025**: 339 devices (7.80%) - 🔴 AT RISK
-- **Total ESOL**: 757 devices (17.41%) - includes ESOL 2026
-- **Windows 11 Compatibility**: 82.6% - 🟡 CAUTION (target: 90%)
-- **Windows 11 Adoption**: 69.2% - 🟡 CAUTION
-- **Enterprise Kiosks**: 159 need LTSC re-provisioning - 🔴 AT RISK
-- **Overall OKR Completion**: 43.2% - 🔴 AT RISK
-
-## Top Priority Sites
-1. **Izmir**: 211 ESOL devices (38 ESOL 2024, 102 ESOL 2025)
-2. **Blois**: 171 ESOL devices (1 ESOL 2024, 66 ESOL 2025)
-3. **Iasi**: 142 ESOL devices (0 ESOL 2024, 41 ESOL 2025)
-
-## Requirements
+## 📋 Requirements
 
 - Python 3.8+
 - pandas
@@ -363,6 +295,31 @@ Based on your latest OKR tracker analysis:
 - pyyaml
 
 Install with:
-```sh
+```bash
 pip install -r requirements.txt
 ```
+
+## 🎯 Current Status (Example)
+
+Based on recent analysis:
+- **Total Devices**: 4,098
+- **Windows 11 Eligible**: 3,632 (excluding ESOL replacement)
+- **Windows 11 Upgraded**: 3,489 (96.1%)
+- **Windows 11 Pending**: 143 devices (3.9%)
+- **ESOL 2024**: 8 devices (urgent)
+- **ESOL 2025**: 171 devices (planned)
+- **ESOL 2026**: 258 devices (future)
+
+## 🚀 Getting Started
+
+1. **Quick Start**: Run `.\run_dashboard.bat` for interactive analysis
+2. **Windows 11 Focus**: Use `.\run_win11_analysis.bat --burndown` for migration tracking
+3. **ESOL Focus**: Use `.\run_simple_analysis.bat --burndown` for replacement planning
+4. **Daily Monitoring**: Use the OKR dashboard for quick status checks
+
+## 📞 Support
+
+For questions or issues:
+1. Check the batch file help: `.\run_*.bat help`
+2. Review the configuration files in `config/`
+3. Check the auto-generated reports in `data/reports/`
