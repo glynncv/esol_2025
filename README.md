@@ -50,6 +50,7 @@ esol_2025/
 │   ├── processed/              # Exported CSV/JSON data
 │   └── reports/                # Auto-generated reports
 ├── notebooks/                  # Jupyter notebooks for analysis
+├── export_site_win11_pending.py # Export pending Windows 11 devices by site
 ├── run_*.bat                   # Windows batch file launchers
 └── requirements.txt            # Python dependencies
 ```
@@ -73,6 +74,12 @@ esol_2025/
 - **Quick status checks**: Daily progress monitoring
 - **Executive summaries**: Management-ready reports
 - **Site analysis**: Both ESOL and Windows 11 site breakdowns
+
+### **Site-Specific Windows 11 Export**
+- **Pending device export**: Get detailed list of Windows 11 pending devices for any site
+- **Console summary**: Quick overview of eligible, upgraded, and pending counts
+- **CSV export**: Detailed device information for upgrade planning
+- **Site listing**: See all available sites at a glance
 
 ## ⚙️ Configuration
 
@@ -242,6 +249,40 @@ python scripts/euc_summary.py
 .\run_euc_summary.bat
 ```
 
+### 7. **Export Pending Windows 11 Devices** (`export_site_win11_pending.py`)
+**Export detailed pending Windows 11 devices for any site**
+
+**Features:**
+- Site-specific Windows 11 pending device export
+- Detailed console summary with eligibility breakdown
+- CSV export with all device details
+- List all available sites
+- Auto-generates timestamped filenames
+
+**Usage:**
+```bash
+# List all available sites
+python export_site_win11_pending.py --list-sites
+
+# Export for default site (Gillingham)
+python export_site_win11_pending.py
+
+# Export for a specific site
+python export_site_win11_pending.py --site Blois
+python export_site_win11_pending.py --site "Rzeszow, Poland"
+
+# Custom output filename
+python export_site_win11_pending.py --site Iasi --output iasi_pending.csv
+
+# Show help
+python export_site_win11_pending.py --help
+```
+
+**Output:**
+- Console report showing total devices, Win11 eligible, upgraded, and pending counts
+- CSV file with all device columns for detailed analysis
+- Percentages showing eligibility rate and upgrade progress
+
 ## 🎯 OKR Framework
 
 ### **Key Results Tracked**
@@ -277,6 +318,10 @@ python scripts/euc_summary.py
 - `ESOL_Burndown_{timestamp}.md` - ESOL burndown
 - `OKR_Tracker_{timestamp}.md` - OKR tracking
 - `Executive_Summary_{timestamp}.md` - Executive summaries
+
+**Export pending Windows 11 devices for site-specific analysis:**
+
+- `{site_name}_pending_win11_{timestamp}.csv` - Site-specific pending device export (saved to project root)
 
 ## 📊 Data Exports
 
