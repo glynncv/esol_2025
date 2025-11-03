@@ -10,12 +10,19 @@ import argparse
 from pathlib import Path
 from datetime import datetime
 
+def get_project_root():
+    """Get the project root directory (parent of scripts/)"""
+    return Path(__file__).parent.parent
+
 def export_site_win11_pending(site_name, output_file=None):
     """Export Windows 11 pending devices for a specific site"""
     
+    # Get project root for relative paths
+    project_root = get_project_root()
+    
     # Load configuration
-    config_file = Path('config/esol_criteria.yaml')
-    win11_config_file = Path('config/win11_criteria.yaml')
+    config_file = project_root / 'config/esol_criteria.yaml'
+    win11_config_file = project_root / 'config/win11_criteria.yaml'
     
     with open(config_file, 'r') as f:
         esol_config = yaml.safe_load(f)
@@ -32,7 +39,7 @@ def export_site_win11_pending(site_name, output_file=None):
     device_name_col = data_mapping['device_name_column']
     
     # Load data
-    data_file = Path('data/raw/EUC_ESOL.xlsx')
+    data_file = project_root / 'data/raw/EUC_ESOL.xlsx'
     df = pd.read_excel(data_file)
     
     # Filter for specified site
@@ -104,7 +111,7 @@ def export_site_win11_pending(site_name, output_file=None):
             
             print(f"{device:<20} {current_os:<20} {eosl_supported:<20} {action:<30}")
     else:
-        print("\n✅ No pending Windows 11 devices in Gillingham!")
+        print("\n✅ No pending Windows 11 devices!")
     
     # Summary
     print(f"\n{'='*80}")
@@ -114,9 +121,15 @@ def export_site_win11_pending(site_name, output_file=None):
     print(f"Win11 Eligible: {len(win11_supported_df)}")
     print(f"Win11 Upgraded: {len(upgraded_df)}")
     print(f"Pending: {len(pending_df)}")
-    print(f"\nEligibility %: {(len(win11_supported_df)/len(enterprise_df)*100):.1f}%")
-    print(f"Upgrade % (of eligible): {(len(upgraded_df)/len(win11_supported_df)*100):.1f}%")
-    print(f"Pending % (of eligible): {(len(pending_df)/len(win11_supported_df)*100):.1f}%")
+    
+    # Calculate percentages with division by zero protection
+    eligibility_pct = (len(win11_supported_df)/len(enterprise_df)*100) if len(enterprise_df) > 0 else 0
+    upgrade_pct = (len(upgraded_df)/len(win11_supported_df)*100) if len(win11_supported_df) > 0 else 0
+    pending_pct = (len(pending_df)/len(win11_supported_df)*100) if len(win11_supported_df) > 0 else 0
+    
+    print(f"\nEligibility %: {eligibility_pct:.1f}%")
+    print(f"Upgrade % (of eligible): {upgrade_pct:.1f}%")
+    print(f"Pending % (of eligible): {pending_pct:.1f}%")
     
     return pending_df
 
@@ -127,11 +140,14 @@ if __name__ == "__main__":
     parser.add_argument('--list-sites', action='store_true', help='List all available sites')
     args = parser.parse_args()
     
+    # Get project root for relative paths
+    project_root = get_project_root()
+    
     # List sites if requested
     if args.list_sites:
-        data_file = Path('data/raw/EUC_ESOL.xlsx')
+        data_file = project_root / 'data/raw/EUC_ESOL.xlsx'
         df = pd.read_excel(data_file)
-        config_file = Path('config/esol_criteria.yaml')
+        config_file = project_root / 'config/esol_criteria.yaml'
         with open(config_file, 'r') as f:
             esol_config = yaml.safe_load(f)
         site_col = esol_config['data_mapping']['site_column']
@@ -147,10 +163,13 @@ if __name__ == "__main__":
     # Export to CSV for further analysis
     if pending_devices is not None and len(pending_devices) > 0:
         if args.output:
-            output_file = args.output
+            output_file = Path(args.output)
+            output_file.parent.mkdir(parents=True, exist_ok=True)
         else:
             timestamp = datetime.now().strftime('%Y%m%d_%H%M%S')
-            output_file = f'{args.site.lower().replace(" ", "_")}_pending_win11_{timestamp}.csv'
+            processed_dir = project_root / 'data/processed'
+            processed_dir.mkdir(parents=True, exist_ok=True)
+            output_file = processed_dir / f'{args.site.lower().replace(" ", "_")}_pending_win11_{timestamp}.csv'
         pending_devices.to_csv(output_file, index=False)
         print(f"\nDetailed pending devices exported to: {output_file}")
 

@@ -50,7 +50,6 @@ esol_2025/
 │   ├── processed/              # Exported CSV/JSON data
 │   └── reports/                # Auto-generated reports
 ├── notebooks/                  # Jupyter notebooks for analysis
-├── export_site_win11_pending.py # Export pending Windows 11 devices by site
 ├── run_*.bat                   # Windows batch file launchers
 └── requirements.txt            # Python dependencies
 ```
@@ -249,7 +248,7 @@ python scripts/euc_summary.py
 .\run_euc_summary.bat
 ```
 
-### 7. **Export Pending Windows 11 Devices** (`export_site_win11_pending.py`)
+### 7. **Export Pending Windows 11 Devices** (`scripts/export_site_win11_pending.py`)
 **Export detailed pending Windows 11 devices for any site**
 
 **Features:**
@@ -262,25 +261,25 @@ python scripts/euc_summary.py
 **Usage:**
 ```bash
 # List all available sites
-python export_site_win11_pending.py --list-sites
+python scripts/export_site_win11_pending.py --list-sites
 
 # Export for default site (Gillingham)
-python export_site_win11_pending.py
+python scripts/export_site_win11_pending.py
 
 # Export for a specific site
-python export_site_win11_pending.py --site Blois
-python export_site_win11_pending.py --site "Rzeszow, Poland"
+python scripts/export_site_win11_pending.py --site Blois
+python scripts/export_site_win11_pending.py --site "Rzeszow, Poland"
 
 # Custom output filename
-python export_site_win11_pending.py --site Iasi --output iasi_pending.csv
+python scripts/export_site_win11_pending.py --site Iasi --output iasi_pending.csv
 
 # Show help
-python export_site_win11_pending.py --help
+python scripts/export_site_win11_pending.py --help
 ```
 
 **Output:**
 - Console report showing total devices, Win11 eligible, upgraded, and pending counts
-- CSV file with all device columns for detailed analysis
+- CSV file with all device columns for detailed analysis (auto-saved to `data/processed/`)
 - Percentages showing eligibility rate and upgrade progress
 
 ## 🎯 OKR Framework
