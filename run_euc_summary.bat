@@ -1,4 +1,11 @@
 @echo off
+REM ========================================
+REM EUC Summary Validation Tool
+REM ========================================
+REM Summary: Validates and summarizes EUC device data quality and completeness.
+REM          Provides data validation metrics and summary statistics.
+REM          Usage: run_euc_summary.bat [options] | run_euc_summary.bat help
+REM ========================================
 echo EUC Summary Validation Tool
 echo ============================
 
@@ -22,3 +29,4 @@ echo   run_euc_summary.bat --format json --output metrics.json
 :end
 echo.
 pause
+
