@@ -4,36 +4,50 @@ This project provides comprehensive tools to analyze End User Computing (EUC) de
 
 ## 🚀 Quick Start
 
-### Interactive Dashboard (Recommended)
+### **Unified Launcher: `analyze.bat`** (Recommended)
+The primary way to use all tools:
+
+```bash
+# Show all available commands
+.\analyze.bat help
+
+# Launch interactive OKR dashboard
+.\analyze.bat dashboard
+
+# Windows 11 migration analysis
+.\analyze.bat win11 --site-table --burndown
+
+# ESOL replacement tracking
+.\analyze.bat esol --site-table --burndown
+
+# OKR tracker reports
+.\analyze.bat okr
+
+# Kiosk device analysis
+.\analyze.bat kiosk
+
+# Data validation summary
+.\analyze.bat summary
+
+# Export pending Win11 devices by site
+.\analyze.bat export --site Gillingham
+```
+
+### Alternative: Direct Batch Files
 ```bash
 # Launch the comprehensive OKR dashboard
 .\run_dashboard.bat
-# or
-python scripts/okr_dashboard.py
-```
 
-### Windows 11 Analysis
-```bash
-# Basic Windows 11 analysis
-.\run_win11_analysis.bat
-
-# With site breakdown and burndown tracking
+# Windows 11 analysis
 .\run_win11_analysis.bat --site-table --burndown
 
-# Dedicated burndown analysis
-.\run_win11_burndown.bat
-```
-
-### ESOL Analysis
-```bash
-# Basic ESOL analysis
-.\run_esol_analysis.bat
-
-# With site breakdown and burndown tracking
+# ESOL analysis
 .\run_esol_analysis.bat --site-table --burndown
 
-# Dedicated ESOL burndown analysis
-.\run_esol_burndown.bat
+# Other dedicated launchers
+.\run_okr_tracker.bat
+.\run_kiosk_analysis.bat
+.\run_euc_summary.bat
 ```
 
 ## 📁 Project Structure
@@ -344,7 +358,25 @@ python scripts/export_site_win11_pending.py --help
 - Scoring weights and thresholds
 - Progress tracking settings
 
-## 🖥️ Batch Files (Windows)
+## 🖥️ Launchers
+
+### **Unified Launcher: `analyze.bat`** (Recommended)
+One command to rule them all:
+```bash
+analyze.bat [command] [options]
+```
+
+**Commands:**
+- `dashboard` - Launch interactive OKR dashboard
+- `win11` - Windows 11 migration analysis
+- `esol` - ESOL replacement tracking
+- `okr` - OKR tracker reports
+- `kiosk` - Kiosk device analysis
+- `summary` - Data validation summary
+- `export` - Export pending Win11 devices by site
+- `help` - Show help message
+
+### Individual Batch Files (Alternative)
 
 | File | Purpose | Usage |
 |------|---------|-------|
@@ -382,14 +414,15 @@ Based on recent analysis:
 
 ## 🚀 Getting Started
 
-1. **Quick Start**: Run `.\run_dashboard.bat` for interactive analysis
-2. **Windows 11 Focus**: Use `.\run_win11_analysis.bat --burndown` for migration tracking
-3. **ESOL Focus**: Use `.\run_esol_analysis.bat --burndown` for replacement planning
-4. **Daily Monitoring**: Use the OKR dashboard for quick status checks
+1. **Quick Start**: Run `.\analyze.bat dashboard` or `.\analyze.bat help` to see all options
+2. **Windows 11 Focus**: Use `.\analyze.bat win11 --burndown` for migration tracking
+3. **ESOL Focus**: Use `.\analyze.bat esol --burndown` for replacement planning
+4. **Daily Monitoring**: Use `.\analyze.bat dashboard` for quick status checks
+5. **Site Export**: Use `.\analyze.bat export --site [SiteName]` for pending Win11 devices
 
 ## 📞 Support
 
 For questions or issues:
-1. Check the batch file help: `.\run_*.bat help`
+1. Check the unified launcher help: `.\analyze.bat help`
 2. Review the configuration files in `config/`
 3. Check the auto-generated reports in `data/reports/`
