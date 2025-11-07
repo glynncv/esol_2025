@@ -334,7 +334,7 @@ python scripts/export_site_win11_pending.py --help
 
 **Export pending Windows 11 devices for site-specific analysis:**
 
-- `{site_name}_pending_win11_{timestamp}.csv` - Site-specific pending device export (saved to project root)
+- `{site_name}_pending_win11_{timestamp}.csv` - Site-specific pending device export (saved to `data/processed/`)
 
 ## 📊 Data Exports
 
