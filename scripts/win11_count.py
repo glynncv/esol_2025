@@ -1,6 +1,10 @@
 import pandas as pd
 import argparse
 from pathlib import Path
+
+
+
+
 from datetime import datetime
 import sys
 
@@ -31,7 +35,8 @@ def main():
     df = pd.read_excel(data_file)
     
     # Get column mappings
-    os_col = data_mapping['os_column']
+    os_col = data_mapping['os_column']  # EOSL Latest OS Build Supported - used for Win11 eligibility
+    current_os_col = data_mapping['current_os_column']  # Current OS Build - used for Win11 upgrade status
     edition_col = data_mapping['edition_column']
     action_col = data_mapping['action_column']
     site_col = data_mapping['site_column']
@@ -40,7 +45,7 @@ def main():
     enterprise_mask = df[edition_col] == 'Enterprise'
     enterprise_df = df[enterprise_mask]
     
-    # Count Enterprise EUCs already on Windows 11 (excluding ESOL devices)
+    # Get Windows 11 patterns and ESOL actions
     win11_patterns = win11_config['win11_patterns']
     win11_pattern = '|'.join(win11_patterns)
     
@@ -48,12 +53,17 @@ def main():
     migration_categories = win11_config['migration_categories']
     migration_actions = [esol_config['esol_categories'][cat]['action_value'] for cat in migration_categories]
     
-    # Windows 11 scope: Enterprise devices with Win11 OS that are NOT ESOL 2024/2025
-    enterprise_win11_mask = (
-        enterprise_df[os_col].str.contains(win11_pattern, case=False, na=False) &
-        ~enterprise_df[action_col].isin(migration_actions)
+    # Calculate Windows 11 eligible devices (Enterprise devices that SUPPORT Win11, excluding ESOL)
+    eligible_mask = (
+        ~enterprise_df[action_col].isin(migration_actions) &
+        enterprise_df[os_col].str.contains(win11_pattern, case=False, na=False)
     )
-    enterprise_win11_count = len(enterprise_df[enterprise_win11_mask])
+    eligible_df = enterprise_df[eligible_mask]
+    total_eligible = len(eligible_df)
+    
+    # Count eligible Enterprise EUCs already on Windows 11 (check current OS installation)
+    enterprise_win11_mask = eligible_df[current_os_col].str.contains(win11_pattern, case=False, na=False)
+    enterprise_win11_count = len(eligible_df[enterprise_win11_mask])
     
     # Count Enterprise EUCs that will get Windows 11 via ESOL replacement
     enterprise_esol_mask = enterprise_df[action_col].isin(migration_actions)
@@ -156,8 +166,7 @@ def main():
         current_date = datetime.now()
         days_remaining = (target_date - current_date).days
         
-        # Calculate burndown metrics
-        total_eligible = total_enterprise - enterprise_esol_count
+        # Calculate burndown metrics (total_eligible already calculated above - only Win11 eligible devices)
         completed_count = enterprise_win11_count
         remaining_count = total_eligible - completed_count
         completion_percentage = round((completed_count / total_eligible) * 100, 1) if total_eligible > 0 else 0
@@ -259,8 +268,7 @@ def main():
         print(f"   Report: {burndown_report_file}")
         print()
     
-    # Calculate KPI metrics
-    total_eligible = total_enterprise - enterprise_esol_count  # Total eligible (excluding ESOL)
+    # Calculate KPI metrics (total_eligible already calculated above - only Win11 eligible devices)
     eligible_upgraded_pct = round((enterprise_win11_count / total_eligible) * 100, 2) if total_eligible > 0 else 0
     eligible_pending_count = total_eligible - enterprise_win11_count
     eligible_pending_pct = round((eligible_pending_count / total_eligible) * 100, 2) if total_eligible > 0 else 0

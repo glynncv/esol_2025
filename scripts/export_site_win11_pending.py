@@ -67,6 +67,17 @@ def export_site_win11_pending(site_name, output_file=None):
     win11_patterns = win11_config['win11_patterns']
     win11_pattern = '|'.join(win11_patterns)
     
+    # EMEA file filters (matching EMEA_Win11_Pending.xlsx criteria):
+    # - Current OS Build: Win10 1607, 1809, 1909, 21H2, 22H2, or Win7 (NOT Win11)
+    # - EOSL Latest OS Build Supported: Win11 23H2 or Win11 24H2 (specific versions)
+    # - Action to take: N/A, Redeploy, Replace by 11/11/2026, or Blank
+    
+    # Allowed current OS builds (matching EMEA file filter)
+    allowed_current_os = ['Win10 1607', 'Win10 1809', 'Win10 1909', 'Win10 21H2', 'Win10 22H2', 'Win7']
+    
+    # Allowed EOSL Win11 versions (matching EMEA file filter)
+    allowed_eosl_win11 = ['Win11 23H2', 'Win11 24H2']
+    
     # Step 1: Filter for eligible devices (excluding ESOL 2024/2025)
     eligible_mask = ~enterprise_df[action_col].isin(migration_actions)
     eligible_df = enterprise_df[eligible_mask].copy()
@@ -81,16 +92,27 @@ def export_site_win11_pending(site_name, output_file=None):
         for _, row in esol_devices.iterrows():
             print(f"  - {row[device_name_col]}: {row[action_col]}")
     
-    # Step 2: Filter for devices that support Win11 (capability check)
-    win11_supported_mask = eligible_df[os_col].str.contains(win11_pattern, case=False, na=False)
-    win11_supported_df = eligible_df[win11_supported_mask].copy()
+    # Step 2: Filter for devices that support Win11 23H2 or 24H2 (capability check - matching EMEA file)
+    eosl_win11_mask = eligible_df[os_col].isin(allowed_eosl_win11) | \
+                      eligible_df[os_col].str.contains('Win11 23H2|Win11 24H2', case=False, na=False, regex=True)
+    win11_supported_df = eligible_df[eosl_win11_mask].copy()
     
-    print(f"\nEnterprise devices that support Win11 (capability): {len(win11_supported_df)}")
+    print(f"\nEnterprise devices that support Win11 23H2 or 24H2 (capability): {len(win11_supported_df)}")
     
-    # Step 3: Check which devices are already upgraded
-    current_os_mask = win11_supported_df[current_os_col].str.contains(win11_pattern, case=False, na=False)
-    upgraded_df = win11_supported_df[current_os_mask].copy()
-    pending_df = win11_supported_df[~current_os_mask].copy()
+    # Step 3: Filter for devices with allowed current OS builds (NOT Win11 - matching EMEA file)
+    # Use regex pattern without capture groups to avoid warning
+    current_os_allowed_mask = win11_supported_df[current_os_col].isin(allowed_current_os) | \
+                              win11_supported_df[current_os_col].str.contains('Win10 (?:1607|1809|1909|21H2|22H2)|Win7', 
+                                                                              case=False, na=False, regex=True)
+    win11_supported_df = win11_supported_df[current_os_allowed_mask].copy()
+    
+    print(f"\nEnterprise devices with allowed current OS (Win10 1607/1809/1909/21H2/22H2 or Win7): {len(win11_supported_df)}")
+    
+    # Step 4: Check which devices are already upgraded (for reporting, but EMEA file excludes these)
+    # Note: EMEA file explicitly excludes Win11 from current OS filter, so all matching devices are pending
+    current_os_win11_mask = win11_supported_df[current_os_col].str.contains(win11_pattern, case=False, na=False)
+    upgraded_df = win11_supported_df[current_os_win11_mask].copy()
+    pending_df = win11_supported_df[~current_os_win11_mask].copy()
     
     print(f"\nUpgraded to Win11: {len(upgraded_df)}")
     print(f"Pending upgrade: {len(pending_df)}")
@@ -163,7 +185,10 @@ if __name__ == "__main__":
     # Export to CSV for further analysis
     if pending_devices is not None and len(pending_devices) > 0:
         if args.output:
+            # Resolve relative paths relative to project root, absolute paths as-is
             output_file = Path(args.output)
+            if not output_file.is_absolute():
+                output_file = project_root / output_file
             output_file.parent.mkdir(parents=True, exist_ok=True)
         else:
             timestamp = datetime.now().strftime('%Y%m%d_%H%M%S')
