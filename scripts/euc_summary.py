@@ -8,6 +8,11 @@ import json
 import sys
 from datetime import datetime
 from pathlib import Path
+
+# Add the scripts directory to the path
+sys.path.append(str(Path(__file__).parent))
+
+from separated_esol_analyzer import ConfigManager
 from data_utils import get_data_file_path, add_data_file_argument, validate_data_file
 
 def main():
@@ -18,41 +23,72 @@ def main():
     parser.add_argument('--format', choices=['text', 'json'], default='text', help='Output format')
     parser.add_argument('--quiet', action='store_true', help='Quiet mode for automation')
     args = parser.parse_args()
-    
+
+    # Load configuration
+    config_manager = ConfigManager()
+    esol_config = config_manager.get_esol_criteria()
+    win11_config = config_manager.get_win11_criteria()
+    data_mapping = esol_config['data_mapping']
+    esol_categories = esol_config['esol_categories']
+    kiosk_config = esol_config['kiosk_detection']
+
+    # Get column names from config
+    action_col = data_mapping['action_column']
+    current_os_col = data_mapping['current_os_column']
+    edition_col = data_mapping['edition_column']
+    device_name_col = data_mapping['device_name_column']
+    user_columns = data_mapping['user_columns']
+    last_user_col = user_columns['last']
+
+    # Get ESOL action values from config
+    esol_2024_action = esol_categories['esol_2024']['action_value']
+    esol_2025_action = esol_categories['esol_2025']['action_value']
+    esol_2026_action = esol_categories['esol_2026']['action_value']
+
+    # Get Windows 11 patterns from config
+    win11_patterns = win11_config['win11_patterns']
+    win11_pattern = '|'.join(win11_patterns)
+
+    # Get kiosk detection patterns from config
+    device_patterns = kiosk_config['device_name_patterns']
+    user_patterns = kiosk_config['user_loggedon_patterns']
+
     # Load data
     try:
         data_file = get_data_file_path(args.data_file)
         validate_data_file(data_file)
-        
+
         df = pd.read_excel(data_file) if data_file.endswith('.xlsx') else pd.read_csv(data_file)
-        required_cols = ['Action to take', 'Current OS Build', 'LTSC or Enterprise', 'Device Name', 'Last User Logged On']
+        required_cols = [action_col, current_os_col, edition_col, device_name_col, last_user_col]
         if not all(col in df.columns for col in required_cols):
-            raise ValueError("Missing required columns")
+            raise ValueError(f"Missing required columns. Expected: {required_cols}")
     except Exception as e:
         print(f"❌ Error loading data: {e}")
         sys.exit(1)
-    
+
     # Extract metrics
     total_devices = len(df)
-    enterprise_count = len(df[df['LTSC or Enterprise'] == 'Enterprise'])
-    ltsc_count = len(df[df['LTSC or Enterprise'] == 'LTSC'])
-    esol_2024 = len(df[df['Action to take'] == 'Urgent Replacement'])
-    esol_2025 = len(df[df['Action to take'] == 'Replace by 14/10/2025'])
-    esol_2026 = len(df[df['Action to take'] == 'Replace by 11/11/2026'])
+    enterprise_count = len(df[df[edition_col] == 'Enterprise'])
+    ltsc_count = len(df[df[edition_col] == 'LTSC'])
+    esol_2024 = len(df[df[action_col] == esol_2024_action])
+    esol_2025 = len(df[df[action_col] == esol_2025_action])
+    esol_2026 = len(df[df[action_col] == esol_2026_action])
     total_esol = esol_2024 + esol_2025 + esol_2026
-    
+
     # Windows 11 (Enterprise baseline)
-    enterprise_df = df[df['LTSC or Enterprise'] == 'Enterprise']
-    enterprise_win11 = len(enterprise_df[enterprise_df['Current OS Build'].str.contains('Win11', na=False)])
+    enterprise_df = df[df[edition_col] == 'Enterprise']
+    enterprise_win11 = len(enterprise_df[enterprise_df[current_os_col].str.contains(win11_pattern, case=False, na=False)])
     win11_adoption = round((enterprise_win11 / enterprise_count) * 100, 1) if enterprise_count > 0 else 0
-    enterprise_esol = len(enterprise_df[enterprise_df['Action to take'].isin(['Urgent Replacement', 'Replace by 14/10/2025'])])
+    enterprise_esol = len(enterprise_df[enterprise_df[action_col].isin([esol_2024_action, esol_2025_action])])
     win11_compatibility = round(((enterprise_win11 + enterprise_esol) / enterprise_count) * 100, 1) if enterprise_count > 0 else 0
-    
-    # Kiosk detection
-    kiosk_mask = df['Device Name'].str.contains('SHP', na=False) | df['Last User Logged On'].str.contains('kiosk', case=False, na=False)
+
+    # Kiosk detection (using patterns from config)
+    device_pattern = '|'.join(device_patterns)
+    user_pattern = '|'.join(user_patterns)
+    kiosk_mask = df[device_name_col].str.contains(device_pattern, na=False) | df[last_user_col].str.contains(user_pattern, case=False, na=False)
     total_kiosks = len(df[kiosk_mask])
-    enterprise_kiosks = len(df[kiosk_mask & (df['LTSC or Enterprise'] == 'Enterprise')])
-    ltsc_kiosks = len(df[kiosk_mask & (df['LTSC or Enterprise'] == 'LTSC')])
+    enterprise_kiosks = len(df[kiosk_mask & (df[edition_col] == 'Enterprise')])
+    ltsc_kiosks = len(df[kiosk_mask & (df[edition_col] == 'LTSC')])
     
     # Generate output
     timestamp = datetime.now().strftime('%Y-%m-%d %H:%M:%S')
