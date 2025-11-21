@@ -33,21 +33,14 @@ The primary way to use all tools:
 .\analyze.bat export --site Gillingham
 ```
 
-### Alternative: Direct Batch Files
+### Quick Convenience Launchers
 ```bash
-# Launch the comprehensive OKR dashboard
-.\run_dashboard.bat
+# Quick daily dashboard check
+.\dashboard.bat
 
-# Windows 11 analysis
-.\run_win11_analysis.bat --site-table --burndown
-
-# ESOL analysis
-.\run_esol_analysis.bat --site-table --burndown
-
-# Other dedicated launchers
-.\run_okr_tracker.bat
-.\run_kiosk_analysis.bat
-.\run_euc_summary.bat
+# Quick burndown reports
+.\burndown.bat esol --site-table
+.\burndown.bat win11 --site-table
 ```
 
 ## 📁 Project Structure
@@ -63,8 +56,11 @@ esol_2025/
 │   ├── raw/                    # Input Excel files (not tracked in git)
 │   ├── processed/              # Exported CSV/JSON data
 │   └── reports/                # Auto-generated reports
+├── docs/templates/             # Documentation and prompt templates
 ├── notebooks/                  # Jupyter notebooks for analysis
-├── run_*.bat                   # Windows batch file launchers
+├── analyze.bat                 # Unified launcher (main interface)
+├── dashboard.bat               # Quick dashboard launcher
+├── burndown.bat                # Quick burndown reports (esol/win11)
 └── requirements.txt            # Python dependencies
 ```
 
@@ -334,7 +330,7 @@ python scripts/export_site_win11_pending.py --help
 
 **Export pending Windows 11 devices for site-specific analysis:**
 
-- `{site_name}_pending_win11_{timestamp}.csv` - Site-specific pending device export (saved to project root)
+- `{site_name}_pending_win11_{timestamp}.csv` - Site-specific pending device export (saved to `data/processed/`)
 
 ## 📊 Data Exports
 
@@ -360,13 +356,15 @@ python scripts/export_site_win11_pending.py --help
 
 ## 🖥️ Launchers
 
-### **Unified Launcher: `analyze.bat`** (Recommended)
-One command to rule them all:
+The project provides **3 streamlined batch files** for maximum simplicity and flexibility:
+
+### **1. `analyze.bat` - Unified Launcher** (Main Interface)
+Complete access to all tools via subcommands:
 ```bash
 analyze.bat [command] [options]
 ```
 
-**Commands:**
+**Available Commands:**
 - `dashboard` - Launch interactive OKR dashboard
 - `win11` - Windows 11 migration analysis
 - `esol` - ESOL replacement tracking
@@ -376,18 +374,36 @@ analyze.bat [command] [options]
 - `export` - Export pending Win11 devices by site
 - `help` - Show help message
 
-### Individual Batch Files (Alternative)
+**Examples:**
+```bash
+.\analyze.bat dashboard
+.\analyze.bat win11 --site-table --burndown
+.\analyze.bat esol --category esol_2024
+.\analyze.bat export --site Gillingham
+```
 
-| File | Purpose | Usage |
-|------|---------|-------|
-| `run_dashboard.bat` | Interactive OKR dashboard | `.\run_dashboard.bat` |
-| `run_win11_analysis.bat` | Windows 11 analysis | `.\run_win11_analysis.bat --site-table --burndown` |
-| `run_win11_burndown.bat` | Windows 11 burndown only | `.\run_win11_burndown.bat` |
-| `run_esol_analysis.bat` | ESOL analysis | `.\run_esol_analysis.bat --site-table --burndown` |
-| `run_esol_burndown.bat` | ESOL burndown only | `.\run_esol_burndown.bat` |
-| `run_okr_tracker.bat` | OKR tracking | `.\run_okr_tracker.bat monthly` |
-| `run_kiosk_analysis.bat` | Kiosk analysis | `.\run_kiosk_analysis.bat` |
-| `run_euc_summary.bat` | EUC summary validation | `.\run_euc_summary.bat` |
+### **2. `dashboard.bat` - Quick Dashboard Launcher**
+Fast access for daily monitoring:
+```bash
+.\dashboard.bat              # Launch interactive dashboard
+.\dashboard.bat --help       # Show help options
+```
+
+### **3. `burndown.bat` - Quick Burndown Reports**
+Dual-mode burndown analysis:
+```bash
+.\burndown.bat esol [options]     # ESOL burndown
+.\burndown.bat win11 [options]    # Windows 11 burndown
+```
+
+**Examples:**
+```bash
+.\burndown.bat esol --site-table
+.\burndown.bat win11 --site-table
+.\burndown.bat esol --category esol_2024
+```
+
+**Why only 3 files?** Less is more! The unified launcher provides complete functionality, while the two convenience launchers offer quick access to the most frequent operations. All three accept full parameter pass-through
 
 ## 📋 Requirements
 
@@ -414,11 +430,13 @@ Based on recent analysis:
 
 ## 🚀 Getting Started
 
-1. **Quick Start**: Run `.\analyze.bat dashboard` or `.\analyze.bat help` to see all options
-2. **Windows 11 Focus**: Use `.\analyze.bat win11 --burndown` for migration tracking
-3. **ESOL Focus**: Use `.\analyze.bat esol --burndown` for replacement planning
-4. **Daily Monitoring**: Use `.\analyze.bat dashboard` for quick status checks
+1. **Quick Start**: Run `.\dashboard.bat` or `.\analyze.bat help` to see all options
+2. **Daily Monitoring**: Use `.\dashboard.bat` for quick status checks
+3. **Burndown Reports**: Use `.\burndown.bat esol` or `.\burndown.bat win11` for tracking
+4. **Full Features**: Use `.\analyze.bat [command]` for complete control
 5. **Site Export**: Use `.\analyze.bat export --site [SiteName]` for pending Win11 devices
+
+**Tip:** All three batch files (`analyze.bat`, `dashboard.bat`, `burndown.bat`) accept parameters for flexibility
 
 ## 📞 Support
 
