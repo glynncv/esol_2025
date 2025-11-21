@@ -1,7 +1,13 @@
 import pandas as pd
 import argparse
+import sys
 from pathlib import Path
 from datetime import datetime
+
+# Add the scripts directory to the path
+sys.path.append(str(Path(__file__).parent))
+
+from separated_esol_analyzer import ConfigManager
 from data_utils import get_data_file_path, add_data_file_argument, validate_data_file
 
 def main():
@@ -15,7 +21,24 @@ def main():
     parser.add_argument('--burndown', action='store_true', help='Generate ESOL replacement burndown report')
 
     args = parser.parse_args()
-    
+
+    # Load configuration
+    config_manager = ConfigManager()
+    esol_config = config_manager.get_esol_criteria()
+    data_mapping = esol_config['data_mapping']
+    esol_categories = esol_config['esol_categories']
+
+    # Get column names from config
+    action_col = data_mapping['action_column']
+    cost_col = data_mapping['cost_column']
+    site_col = data_mapping['site_column']
+
+    # Get ESOL action values from config
+    esol_2024_action = esol_categories['esol_2024']['action_value']
+    esol_2025_action = esol_categories['esol_2025']['action_value']
+    esol_2026_action = esol_categories['esol_2026']['action_value']
+    all_esol_actions = [esol_2024_action, esol_2025_action, esol_2026_action]
+
     # Read the Excel file
     data_file = get_data_file_path(args.data_file)
     validate_data_file(data_file)
@@ -24,16 +47,16 @@ def main():
     if args.site_table:
         # Generate site summary table
         # Filter for ESOL devices only (all three categories)
-        esol_df = df[df['Action to take'].isin(['Urgent Replacement', 'Replace by 14/10/2025', 'Replace by 11/11/2026'])]
-        
+        esol_df = df[df[action_col].isin(all_esol_actions)]
+
         # Group by site and calculate counts and costs
-        site_data = esol_df.groupby('Site Location').agg({
-            'Action to take': lambda x: (x == 'Urgent Replacement').sum(),  # ESOL 2024
-            'Cost for Replacement $': 'sum'  # Total cost for all ESOL devices
-        }).rename(columns={'Action to take': 'ESOL_2024_Count', 'Cost for Replacement $': 'Total_Cost'})
-        
-        site_data['ESOL_2025_Count'] = esol_df.groupby('Site Location')['Action to take'].apply(lambda x: (x == 'Replace by 14/10/2025').sum())
-        site_data['ESOL_2026_Count'] = esol_df.groupby('Site Location')['Action to take'].apply(lambda x: (x == 'Replace by 11/11/2026').sum())
+        site_data = esol_df.groupby(site_col).agg({
+            action_col: lambda x: (x == esol_2024_action).sum(),  # ESOL 2024
+            cost_col: 'sum'  # Total cost for all ESOL devices
+        }).rename(columns={action_col: 'ESOL_2024_Count', cost_col: 'Total_Cost'})
+
+        site_data['ESOL_2025_Count'] = esol_df.groupby(site_col)[action_col].apply(lambda x: (x == esol_2025_action).sum())
+        site_data['ESOL_2026_Count'] = esol_df.groupby(site_col)[action_col].apply(lambda x: (x == esol_2026_action).sum())
         site_data['Total_ESOL'] = site_data['ESOL_2024_Count'] + site_data['ESOL_2025_Count'] + site_data['ESOL_2026_Count']
         
         # Reorder columns to match preferred structure
@@ -65,11 +88,11 @@ def main():
     
     total = len(df)
     print(f"Total devices: {total}")
-    
+
     # Process the entire dataset (not just a sample)
-    urgent_count = (df['Action to take'] == 'Urgent Replacement').sum()
-    replace_count = (df['Action to take'] == 'Replace by 14/10/2025').sum()
-    replace_2026_count = (df['Action to take'] == 'Replace by 11/11/2026').sum()
+    urgent_count = (df[action_col] == esol_2024_action).sum()
+    replace_count = (df[action_col] == esol_2025_action).sum()
+    replace_2026_count = (df[action_col] == esol_2026_action).sum()
     
     # Calculate ESOL counts
     esol2024 = urgent_count
@@ -128,12 +151,7 @@ def main():
     
     # ESOL Burndown analysis if requested
     if args.burndown:
-        # Load ESOL configuration for target dates
-        from separated_esol_analyzer import ConfigManager
-        config_manager = ConfigManager()
-        esol_config = config_manager.get_esol_criteria()
-        
-        # Get target dates for each ESOL category
+        # Get target dates for each ESOL category (already loaded above)
         esol_2024_date = datetime.strptime(esol_config['esol_categories']['esol_2024']['target_date'], '%Y-%m-%d')
         esol_2025_date = datetime.strptime(esol_config['esol_categories']['esol_2025']['target_date'], '%Y-%m-%d')
         esol_2026_date = datetime.strptime(esol_config['esol_categories']['esol_2026']['target_date'], '%Y-%m-%d')
