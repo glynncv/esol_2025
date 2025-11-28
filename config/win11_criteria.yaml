@@ -1,0 +1,65 @@
+# Windows 11 EUC Analysis Configuration
+# =====================================
+
+# KPI Target: 100% of eligible EUCs upgraded by end of Oct 2025
+kpi_target_date: '2025-10-31'
+kpi_target_percentage: 100
+
+# Windows 11 eligibility and upgrade logic:
+# 
+# ELIGIBILITY CRITERIA (all must be met):
+# 1. LTSC or Enterprise = "Enterprise" (only Enterprise devices targeted)
+# 2. EOSL Latest OS Build Supported contains "Win11" (device capability)
+# 3. Action to take is any EXCEPT ESOL 2024 or ESOL 2025 (exclude replacement devices)
+#
+# UPGRADE STATUS CALCULATION:
+# - Win11 Eligible = Enterprise devices that support Win11 (excluding ESOL replacement)
+# - Win11 Upgraded = Of those eligible, how many currently have Win11 installed
+# - Pending = Eligible - Upgraded (devices that can be upgraded but haven't been)
+#
+# COLUMN USAGE:
+# - Eligibility: "EOSL Latest OS Build Supported" (device capability)
+# - Upgrade Status: "Current OS Build" (actual installation)
+
+# Only Enterprise EUCs are targeted for Windows 11 upgrade
+target_editions:
+- Enterprise
+
+# LTSC devices are excluded from Windows 11 push
+exclude_editions:
+- LTSC
+
+# ESOL categories that are EXCLUDED from Windows 11 upgrade (replaced instead)
+excluded_actions:
+- esol_2024  # Urgent Replacement - replaced with Win11 devices
+- esol_2025  # Replace by 14/10/2025 - replaced with Win11 devices
+
+# Windows 11 OS detection patterns
+win11_patterns:
+- Win11
+
+# Migration categories for replacement pathway (not upgrade)
+migration_categories:
+- esol_2024  # Replace with Win11 devices
+- esol_2025  # Replace with Win11 devices
+
+# SUMMARY EXAMPLE (Gillingham):
+# - Total Enterprise devices: 650
+# - Win11 Eligible: 561 (devices that support Win11, excluding ESOL replacement)
+# - Win11 Upgraded: 549 (of those eligible, how many currently have Win11)
+# - Pending: 12 (eligible devices that need upgrade)
+
+# Burndown analysis settings
+burndown:
+  # Target date for Windows 11 upgrade completion
+  target_date: '2025-10-31'
+  
+  # Risk assessment thresholds
+  risk_thresholds:
+    high_risk_days: 30      # Less than 30 days = high risk
+    medium_risk_days: 60    # Less than 60 days = medium risk
+  
+  # Daily burn rate calculation
+  burn_rate:
+    working_days_only: true  # Exclude weekends from burn rate calculation
+    exclude_holidays: true  # Exclude holidays from burn rate calculation

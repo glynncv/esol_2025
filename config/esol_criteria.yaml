@@ -1,0 +1,32 @@
+data_mapping:
+  action_column: Action to take
+  cost_column: Cost for Replacement $
+  device_name_column: Device Name
+  edition_column: LTSC or Enterprise
+  os_column: EOSL Latest OS Build Supported  # Used for Windows 11 eligibility (device capability)
+  current_os_column: Current OS Build         # Used for Windows 11 upgrade status (actual installation)
+  site_column: Site Location
+  user_columns:
+    current: Current User Logged On
+    last: Last User Logged On
+esol_categories:
+  esol_2024:
+    action_value: Urgent Replacement
+    description: Critical devices requiring immediate replacement
+    target_date: '2025-06-30'
+  esol_2025:
+    action_value: Replace by 14/10/2025
+    description: Devices to be replaced by October 2025
+    target_date: '2025-10-14'
+  esol_2026:
+    action_value: Replace by 11/11/2026
+    description: Future replacement devices
+    target_date: '2026-11-11'
+kiosk_detection:
+  case_sensitive: false
+  logic: OR
+  device_name_patterns:
+  - SHP
+  user_loggedon_patterns:
+  - Kiosk
+  - kiosk

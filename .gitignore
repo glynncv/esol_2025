@@ -1,0 +1,89 @@
+# Byte-compiled / optimized / DLL files
+__pycache__/
+*.py[cod]
+*$py.class
+
+# C extensions
+*.so
+
+# Distribution / packaging
+.Python
+env/
+build/
+develop-eggs/
+dist/
+downloads/
+eggs/
+.eggs/
+lib/
+lib64/
+parts/
+sdist/
+var/
+*.egg-info/
+.installed.cfg
+*.egg
+
+# Virtual environments
+.venv/
+venv/
+ENV/
+env.bak/
+venv.bak/
+
+# Jupyter Notebook checkpoints
+.ipynb_checkpoints
+
+# PyCharm
+.idea/
+
+# VS Code
+.vscode/
+
+# Data files
+*.csv
+*.tsv
+*.xls
+*.xlsx
+*.xlsm
+*.h5
+*.db
+*.sqlite
+*.parquet
+*.feather
+*.pkl
+*.pickle
+*.joblib
+*.sav
+*.dat
+*.log
+
+# Ignore raw data contents but keep folder structure
+/data/raw/*
+!/data/raw/.gitkeep
+
+# Ignore reports contents but keep folder structure  
+/data/reports/*
+!/data/reports/.gitkeep
+
+# Ignore historical snapshots (generated files)
+/data/history/*
+
+# Keep processed data folder and its contents
+!/data/processed/
+
+# Ignore OS files
+.DS_Store
+Thumbs.db
+
+# Ignore test outputs
+/tests/__pycache__/
+/tests/*.pyc
+
+# Ignore user secrets
+*.env
+.env.*
+
+# Allow scripts and code
+!scripts/
+!*.py 

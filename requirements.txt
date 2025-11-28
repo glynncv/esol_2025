@@ -1,0 +1,5 @@
+pandas
+openpyxl
+pyyaml>=6.0
+requests
+python-dotenv 
