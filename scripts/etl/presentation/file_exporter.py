@@ -109,9 +109,9 @@ class FileExporter:
                 file_path = file_path.with_suffix('.xlsx')
             file_path.parent.mkdir(parents=True, exist_ok=True)
         else:
-            # Auto-save to data/reports/ with timestamp
+            # Auto-save to data/processed/ with timestamp
             timestamp = datetime.now().strftime('%Y%m%d_%H%M%S')
-            output_dir = Path('data/reports')
+            output_dir = Path('data/processed')
             output_dir.mkdir(parents=True, exist_ok=True)
             file_path = output_dir / f'OKR_Dashboard_{timestamp}.xlsx'
 

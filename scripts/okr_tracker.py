@@ -725,12 +725,15 @@ def main():
             trend_data = TrendAnalyzer.calculate_overall_trends(
                 overall_scores, previous_snapshot['overall_scores']
             )
-            country_scores = TrendAnalyzer.calculate_country_trends(
-                country_scores, previous_snapshot['country_scores_df']
-            )
-            sdm_scores = TrendAnalyzer.calculate_sdm_trends(
-                sdm_scores, previous_snapshot['sdm_scores_df']
-            )
+            # Only calculate trends for requested levels
+            if args.level in ['country', 'all'] and len(country_scores) > 0:
+                country_scores = TrendAnalyzer.calculate_country_trends(
+                    country_scores, previous_snapshot['country_scores_df']
+                )
+            if args.level in ['sdm', 'all'] and len(sdm_scores) > 0:
+                sdm_scores = TrendAnalyzer.calculate_sdm_trends(
+                    sdm_scores, previous_snapshot['sdm_scores_df']
+                )
             print(f"  ✓ Calculated trends vs {trend_data['days_since_previous']} days ago")
         else:
             print(f"  ℹ No previous snapshot found - this is the first run")

@@ -95,6 +95,10 @@ class TrendAnalyzer:
         Returns:
             DataFrame with added trend columns
         """
+        # Handle empty current DataFrame (when country level not requested)
+        if len(current_df) == 0 or 'Country' not in current_df.columns:
+            return current_df.copy()
+        
         if len(previous_df) == 0:
             # No history - add empty trend columns
             current_df = current_df.copy()
@@ -139,6 +143,10 @@ class TrendAnalyzer:
         Returns:
             DataFrame with added trend columns
         """
+        # Handle empty current DataFrame (when SDM level not requested)
+        if len(current_df) == 0 or 'SDM' not in current_df.columns:
+            return current_df.copy()
+        
         if len(previous_df) == 0:
             # No history - add empty trend columns
             current_df = current_df.copy()

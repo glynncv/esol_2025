@@ -85,7 +85,14 @@ echo Quick Examples:
 echo   analyze.bat dashboard
 echo   analyze.bat win11 --site-table --burndown
 echo   analyze.bat esol --site-table --burndown
+echo   analyze.bat okr --level sdm --excel
+echo   analyze.bat okr --level all --excel
 echo   analyze.bat export --site Gillingham
+echo.
+echo SDM Analysis Examples:
+echo   analyze.bat okr --level sdm              SDM-level OKR scores
+echo   analyze.bat okr --level sdm --excel       SDM report with Excel export
+echo   analyze.bat okr --level all --excel       All levels with Excel (includes SDM)
 echo.
 echo ========================================
 goto :end
