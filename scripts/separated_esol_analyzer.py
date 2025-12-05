@@ -41,9 +41,6 @@ if sys.platform == "win32":
     sys.stdout = codecs.getwriter("utf-8")(sys.stdout.detach())
     sys.stderr = codecs.getwriter("utf-8")(sys.stderr.detach())
 
-# Cache loaded YAML configs so they are only read once per ETL run
-_CONFIG_CACHE: Dict[Path, Dict[str, Any]] = {}
-
 
 class ConfigManager:
     """Manages configuration loading and validation"""
@@ -59,24 +56,15 @@ class ConfigManager:
         """Load YAML configuration file"""
         file_path = self.config_path / filename
 
-        # Return cached copy if we've already loaded this file
-        cached = _CONFIG_CACHE.get(file_path)
-        if cached is not None:
-            return cached
-
         try:
             with open(file_path, 'r') as f:
-                data = yaml.safe_load(f)
-                _CONFIG_CACHE[file_path] = data
-                return data
+                return yaml.safe_load(f)
         except FileNotFoundError:
             print(f"⚠️  Config file not found: {file_path}")
             print(f"Creating default configuration...")
             self._create_default_config(filename)
             with open(file_path, 'r') as f:
-                data = yaml.safe_load(f)
-                _CONFIG_CACHE[file_path] = data
-                return data
+                return yaml.safe_load(f)
         except yaml.YAMLError as e:
             print(f"❌ Error loading {filename}: {e}")
             sys.exit(1)
