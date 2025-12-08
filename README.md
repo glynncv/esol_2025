@@ -75,8 +75,7 @@ esol_2025/
 │   ├── processed/              # Exported CSV/JSON data
 │   └── reports/                # Auto-generated reports
 ├── docs/                       # Documentation
-│   ├── ETL_ARCHITECTURE.md     # Comprehensive ETL architecture guide
-│   └── templates/              # Prompt templates
+│   └── ETL_ARCHITECTURE.md     # Comprehensive ETL architecture guide
 ├── notebooks/                  # Jupyter notebooks for analysis
 ├── analyze.bat                 # Unified launcher (main interface)
 ├── dashboard.bat               # Quick dashboard launcher
