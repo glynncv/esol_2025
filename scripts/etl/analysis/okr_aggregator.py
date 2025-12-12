@@ -35,6 +35,11 @@ class OKRAggregator:
         self.weights = self.okr_config['okr_weights']
         self.targets = self.okr_config['targets']
         self.thresholds = self.okr_config['status_thresholds']
+        # Cache penalty thresholds (default to old hardcoded values if not present)
+        self.penalty_thresholds = self.okr_config.get('penalty_thresholds', {
+            'kr1_penalty_threshold_percentage': 1.0,
+            'kr2_penalty_threshold_percentage': 5.0
+        })
 
         # Cache ESOL categories for KR calculations
         self.esol_categories = self.esol_config['esol_categories']
@@ -67,15 +72,19 @@ class OKRAggregator:
         kr1_current = esol_counts.get('esol_2024', 0)
         kr1_pct = (kr1_current / total_devices) * 100 if total_devices > 0 else 0
         kr1_target = self.targets['kr1_target_percentage']
+        kr1_penalty_threshold = self.penalty_thresholds.get('kr1_penalty_threshold_percentage', 1.0)
         # Inverse score: 0 devices = 100%, more devices = lower score
-        kr1_score = max(0, 100 - (kr1_pct / 1.0) * 100) if kr1_pct > 0 else 100
+        # Score becomes 0 when percentage reaches penalty threshold
+        kr1_score = max(0, 100 - (kr1_pct / kr1_penalty_threshold) * 100) if kr1_pct > 0 else 100
 
         # KR2: ESOL 2025 remediation (target: 0%)
         kr2_current = esol_counts.get('esol_2025', 0)
         kr2_pct = (kr2_current / total_devices) * 100 if total_devices > 0 else 0
         kr2_target = self.targets['kr2_target_percentage']
+        kr2_penalty_threshold = self.penalty_thresholds.get('kr2_penalty_threshold_percentage', 5.0)
         # Inverse score: 0 devices = 100%, more devices = lower score
-        kr2_score = max(0, 100 - (kr2_pct / 5.0) * 100) if kr2_pct > 0 else 100
+        # Score becomes 0 when percentage reaches penalty threshold
+        kr2_score = max(0, 100 - (kr2_pct / kr2_penalty_threshold) * 100) if kr2_pct > 0 else 100
 
         # KR3: Windows 11 compatibility (target: 90%)
         kr3_current = win11_counts.get('win11_adoption_pct', 0)

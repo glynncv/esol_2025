@@ -134,6 +134,10 @@ class ConfigManager:
                     'kr3_target_percentage': 90,
                     'kr4_target_count': 0
                 },
+                'penalty_thresholds': {
+                    'kr1_penalty_threshold_percentage': 1.0,
+                    'kr2_penalty_threshold_percentage': 5.0
+                },
                 'milestone_dates': {
                     'kr1_deadline': '2025-06-30',
                     'kr2_milestone_date': '2025-06-30',
